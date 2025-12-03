@@ -1,0 +1,104 @@
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import type { CartItem } from "@/hooks/useOrders";
+import { toast } from "sonner";
+
+import englishLukImg from "@/assets/english-luk.png";
+import englishTransImg from "@/assets/english-trans.png";
+
+interface EnglishSectionProps {
+  onAddToCart: (item: CartItem) => void;
+}
+
+const services = [
+  {
+    id: 'luk',
+    icon: '🎬',
+    name: 'Hỗ trợ project LUK',
+    services: ['Edit Video', 'Làm Kịch Bản', 'Làm Slide', 'Hỗ Trợ Debate'],
+    price: 70000,
+    image: englishLukImg,
+  },
+  {
+    id: 'trans',
+    icon: '📖',
+    name: 'Học TRANS',
+    services: ['Hỗ Trợ Tài Liệu Ôn Thi'],
+    price: 70000,
+    image: englishTransImg,
+  },
+];
+
+const EnglishSection = ({ onAddToCart }: EnglishSectionProps) => {
+  const handleAddToCart = (service: typeof services[0]) => {
+    onAddToCart({
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      type: 'service',
+    });
+    toast.success(`Đã thêm ${service.name} vào giỏ hàng!`);
+  };
+
+  return (
+    <section id="english" className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          Dịch vụ Tiếng Anh
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          Hỗ trợ toàn diện cho các môn Tiếng Anh tại FPT
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {services.map((service) => (
+            <Card 
+              key={service.id}
+              className="min-h-[32rem] flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+            >
+              {/* Image Background - 50% */}
+              <div 
+                className="h-1/2 bg-cover bg-center relative"
+                style={{ backgroundImage: `url(${service.image})` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
+              </div>
+
+              {/* Content - 50% */}
+              <div className="h-1/2 p-6 flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-4xl">{service.icon}</span>
+                  <h3 className="text-2xl font-bold text-primary">{service.name}</h3>
+                </div>
+
+                <div className="space-y-2 mb-6 flex-grow">
+                  {service.services.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Check className="h-5 w-5 text-success" />
+                      <span className="text-sm font-medium">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between mt-auto pt-4 border-t">
+                  <span className="text-2xl font-bold text-primary">
+                    {service.price.toLocaleString('vi-VN')}đ
+                  </span>
+                  <Button 
+                    className="bg-gradient-accent"
+                    onClick={() => handleAddToCart(service)}
+                  >
+                    Đăng ký
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default EnglishSection;
