@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookOpen, ShoppingCart, ChevronDown, ChevronUp } from "lucide-react";
 import type { CartItem } from "@/hooks/useOrders";
+import { useProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
 
 interface DocumentSectionProps {
@@ -11,7 +12,8 @@ interface DocumentSectionProps {
 
 const PRICE_PER_COURSE = 70000;
 
-const documentPackages = [
+// Hardcoded semester structure - can be enhanced later to come from DB
+const semesterStructure = [
   {
     id: 'semester1',
     name: 'Kỳ 1',
@@ -49,9 +51,13 @@ const documentPackages = [
 
 const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
   const [expandedSemester, setExpandedSemester] = useState<string | null>(null);
+  const { products: documents, isLoading } = useProducts('document');
 
-  const handleAddSemesterToCart = (pkg: typeof documentPackages[0]) => {
-    const semesterPrice = pkg.courses.length * PRICE_PER_COURSE;
+  // Get price from DB or fallback to default
+  const pricePerCourse = documents.length > 0 ? documents[0].price : PRICE_PER_COURSE;
+
+  const handleAddSemesterToCart = (pkg: typeof semesterStructure[0]) => {
+    const semesterPrice = pkg.courses.length * pricePerCourse;
     onAddToCart({
       id: pkg.id,
       name: `Tài liệu ${pkg.name} (${pkg.courses.length} môn)`,
@@ -66,7 +72,7 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
       id: `doc-${course.code}`,
       code: course.code,
       name: `Tài liệu ${course.code} - ${course.name}`,
-      price: PRICE_PER_COURSE,
+      price: pricePerCourse,
       type: 'document',
     });
     toast.success(`Đã thêm tài liệu ${course.code} vào giỏ hàng!`);
@@ -86,11 +92,11 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
           Bộ tài liệu ôn thi chất lượng cao cho từng kỳ học
         </p>
         <p className="text-center text-primary font-semibold mb-12">
-          Giá: {PRICE_PER_COURSE.toLocaleString('vi-VN')}đ / môn
+          Giá: {pricePerCourse.toLocaleString('vi-VN')}đ / môn
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-8">
-          {documentPackages.map((pkg) => (
+          {semesterStructure.map((pkg) => (
             <Card 
               key={pkg.id}
               className="p-6 hover:shadow-2xl transition-all duration-300"
@@ -118,7 +124,7 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
                       onClick={() => handleAddCourseToCart(pkg.name, course)}
                     >
                       <ShoppingCart className="h-3 w-3 mr-1" />
-                      {PRICE_PER_COURSE.toLocaleString('vi-VN')}đ
+                      {pricePerCourse.toLocaleString('vi-VN')}đ
                     </Button>
                   </div>
                 ))}
@@ -151,7 +157,7 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
                   className="w-full bg-gradient-success"
                   onClick={() => handleAddSemesterToCart(pkg)}
                 >
-                  Mua cả kỳ - {(pkg.courses.length * PRICE_PER_COURSE).toLocaleString('vi-VN')}đ
+                  Mua cả kỳ - {(pkg.courses.length * pricePerCourse).toLocaleString('vi-VN')}đ
                 </Button>
                 <p className="text-xs text-center text-muted-foreground mt-2">
                   Tiết kiệm hơn khi mua combo {pkg.courses.length} môn
