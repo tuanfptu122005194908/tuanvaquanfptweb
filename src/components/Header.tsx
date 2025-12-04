@@ -26,7 +26,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-[#1a1a2e]/95 backdrop-blur supports-[backdrop-filter]:bg-[#1a1a2e]/80 border-b border-white/10 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -37,10 +37,10 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
               className="h-10 w-10 rounded-full shadow-glow group-hover:scale-110 transition-transform"
             />
             <div className="hidden sm:block">
-              <h1 className="text-xl md:text-2xl font-extrabold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-extrabold text-white">
                 Học cùng Tuấn và Quân
               </h1>
-              <p className="text-xs text-muted-foreground">Nền tảng học tập chất lượng</p>
+              <p className="text-xs text-gray-400">Nền tảng học tập chất lượng</p>
             </div>
           </a>
 
@@ -50,7 +50,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
               <a
                 key={item.label}
                 href={item.href}
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                className="text-sm font-medium text-gray-200 hover:text-pink-400 transition-colors"
               >
                 {item.label}
               </a>
@@ -63,12 +63,12 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative text-gray-200 hover:text-white hover:bg-white/10"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-pink-500 text-white text-xs flex items-center justify-center animate-pulse">
                   {cartCount}
                 </span>
               )}
@@ -77,17 +77,17 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
             {/* User Actions */}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={onOrdersClick}>
+                <Button variant="ghost" size="sm" onClick={onOrdersClick} className="text-gray-200 hover:text-white hover:bg-white/10">
                   <Package className="h-4 w-4 mr-2" />
                   Đơn hàng
                 </Button>
-                <span className="text-sm font-medium">Xin chào, {user.name}</span>
-                <Button variant="ghost" size="icon" onClick={onLogout}>
+                <span className="text-sm font-medium text-gray-200">Xin chào, {user.name}</span>
+                <Button variant="ghost" size="icon" onClick={onLogout} className="text-gray-200 hover:text-white hover:bg-white/10">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <Button className="hidden md:flex bg-gradient-primary" onClick={onLoginClick}>
+              <Button className="hidden md:flex bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white" onClick={onLoginClick}>
                 <User className="h-4 w-4 mr-2" />
                 Đăng nhập
               </Button>
@@ -97,7 +97,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden text-gray-200 hover:text-white hover:bg-white/10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -107,12 +107,12 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-3 border-t">
+          <div className="md:hidden py-4 space-y-3 border-t border-white/10 bg-[#1a1a2e]">
             {menuItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+                className="block px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10 rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
@@ -125,13 +125,13 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
                     onOrdersClick();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted rounded-lg transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   Đơn hàng
                 </button>
-                <div className="px-4 py-2 text-sm">
+                <div className="px-4 py-2 text-sm text-gray-200">
                   <span className="font-medium">Xin chào, {user.name}</span>
-                  <Button variant="ghost" size="sm" onClick={onLogout} className="ml-2">
+                  <Button variant="ghost" size="sm" onClick={onLogout} className="ml-2 text-gray-200 hover:text-white">
                     Đăng xuất
                   </Button>
                 </div>
@@ -142,7 +142,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
                   onLoginClick();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 text-sm font-medium bg-gradient-primary text-white rounded-lg"
+                className="w-full text-left px-4 py-2 text-sm font-medium bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg"
               >
                 Đăng nhập
               </button>
