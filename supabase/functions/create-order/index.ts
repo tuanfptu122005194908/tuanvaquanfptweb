@@ -20,7 +20,7 @@ const CartItemSchema = z.object({
 
 const CustomerInfoSchema = z.object({
   name: z.string().min(1).max(100).trim(),
-  phone: z.string().min(9).max(15).regex(/^[0-9+\-\s]+$/),
+  phone: z.string().min(1).max(15).regex(/^[0-9+\-\s]+$/),
   email: z.string().email().max(255),
   note: z.string().max(1000).optional(),
 });
