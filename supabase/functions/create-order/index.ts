@@ -1,10 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schemas
+const CartItemSchema = z.object({
+  id: z.union([z.number(), z.string()]),
+  code: z.string().max(100).optional(),
+  name: z.string().min(1).max(200),
+  price: z.number().min(0),
+  type: z.enum(['course', 'service', 'document', 'coursera']),
+  quantity: z.number().int().positive().optional(),
+  moocName: z.string().max(200).optional(),
+});
+
+const CustomerInfoSchema = z.object({
+  name: z.string().min(1).max(100).trim(),
+  phone: z.string().min(9).max(15).regex(/^[0-9+\-\s]+$/),
+  email: z.string().email().max(255),
+  note: z.string().max(1000).optional(),
+});
+
+const OrderInputSchema = z.object({
+  items: z.array(CartItemSchema).min(1).max(50),
+  customerInfo: CustomerInfoSchema,
+  total: z.number().positive().max(100000000), // Max 100 million VND
+  couponCode: z.string().max(50).optional(),
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -49,9 +75,25 @@ serve(async (req) => {
     
     console.log('User authenticated:', user.id, user.email);
 
-    const { items, customerInfo, total, couponCode } = await req.json();
+    // Parse and validate input
+    const rawInput = await req.json();
+    const validationResult = OrderInputSchema.safeParse(rawInput);
     
-    console.log('Order data received:', { itemsCount: items?.length, total, couponCode });
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Dữ liệu đơn hàng không hợp lệ!',
+          details: validationResult.error.errors.map(e => e.message).join(', ')
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    const { items, customerInfo, total, couponCode } = validationResult.data;
+    
+    console.log('Order data validated:', { itemsCount: items.length, total, couponCode });
 
     let discountAmount = 0;
     let finalTotal = total;
@@ -61,7 +103,7 @@ serve(async (req) => {
       const { data: coupon, error: couponError } = await supabaseAdmin
         .from('coupons')
         .select('*')
-        .eq('code', couponCode)
+        .eq('code', couponCode.toUpperCase())
         .eq('active', true)
         .single();
 
