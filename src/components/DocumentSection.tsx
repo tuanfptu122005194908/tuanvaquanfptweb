@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BookOpen, ShoppingCart, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, ShoppingCart } from "lucide-react";
 import type { CartItem } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
@@ -50,22 +50,10 @@ const semesterStructure = [
 ];
 
 const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
-  const [expandedSemester, setExpandedSemester] = useState<string | null>(null);
   const { products: documents, isLoading } = useProducts('document');
 
   // Get price from DB or fallback to default
   const pricePerCourse = documents.length > 0 ? documents[0].price : PRICE_PER_COURSE;
-
-  const handleAddSemesterToCart = (pkg: typeof semesterStructure[0]) => {
-    const semesterPrice = pkg.courses.length * pricePerCourse;
-    onAddToCart({
-      id: pkg.id,
-      name: `Tài liệu ${pkg.name} (${pkg.courses.length} môn)`,
-      price: semesterPrice,
-      type: 'document',
-    });
-    toast.success(`Đã thêm tài liệu ${pkg.name} vào giỏ hàng!`);
-  };
 
   const handleAddCourseToCart = (semesterName: string, course: { code: string; name: string }) => {
     onAddToCart({
@@ -76,10 +64,6 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
       type: 'document',
     });
     toast.success(`Đã thêm tài liệu ${course.code} vào giỏ hàng!`);
-  };
-
-  const toggleExpand = (semesterId: string) => {
-    setExpandedSemester(expandedSemester === semesterId ? null : semesterId);
   };
 
   return (
@@ -103,9 +87,9 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
             >
               <h3 className="text-2xl font-bold mb-4 text-primary">{pkg.name}</h3>
               
-              {/* Course list with buy buttons */}
-              <div className="space-y-2 mb-6">
-                {pkg.courses.slice(0, expandedSemester === pkg.id ? undefined : 3).map((course) => (
+              {/* Course list with buy buttons - show all courses */}
+              <div className="space-y-2">
+                {pkg.courses.map((course) => (
                   <div 
                     key={course.code} 
                     className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
@@ -128,40 +112,6 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
                     </Button>
                   </div>
                 ))}
-                
-                {pkg.courses.length > 3 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full text-muted-foreground"
-                    onClick={() => toggleExpand(pkg.id)}
-                  >
-                    {expandedSemester === pkg.id ? (
-                      <>
-                        <ChevronUp className="h-4 w-4 mr-1" />
-                        Thu gọn
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4 mr-1" />
-                        Xem thêm {pkg.courses.length - 3} môn
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              {/* Buy whole semester */}
-              <div className="pt-4 border-t">
-                <Button 
-                  className="w-full bg-gradient-success"
-                  onClick={() => handleAddSemesterToCart(pkg)}
-                >
-                  Mua cả kỳ - {(pkg.courses.length * pricePerCourse).toLocaleString('vi-VN')}đ
-                </Button>
-                <p className="text-xs text-center text-muted-foreground mt-2">
-                  Tiết kiệm hơn khi mua combo {pkg.courses.length} môn
-                </p>
               </div>
             </Card>
           ))}

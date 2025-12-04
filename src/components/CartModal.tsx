@@ -108,11 +108,12 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
     }
 
     try {
+      // Pass subtotal (not discounted total) to backend - backend will calculate discount
       await createOrder(
         user.id,
         cart,
         customerInfo,
-        total,
+        subtotal, // Send original subtotal, not the discounted total
         appliedCoupon?.code
       );
       onClearCart();
