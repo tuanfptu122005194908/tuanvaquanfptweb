@@ -1,39 +1,86 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface Star {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+  duration: number;
+  opacity: number;
+}
 
 const Hero = () => {
+  const [stars, setStars] = useState<Star[]>([]);
+
+  useEffect(() => {
+    const newStars: Star[] = [];
+    for (let i = 0; i < 60; i++) {
+      newStars.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        delay: Math.random() * 5,
+        duration: Math.random() * 3 + 2,
+        opacity: Math.random() * 0.7 + 0.3,
+      });
+    }
+    setStars(newStars);
+  }, []);
+
   return (
     <section className="relative min-h-[500px] flex items-center overflow-hidden bg-gradient-to-br from-[#0f0a1e] via-[#1a1035] to-[#251448]">
+      {/* Animated moving gradient background */}
+      <div className="absolute inset-0 opacity-50">
+        <div 
+          className="absolute inset-0 bg-gradient-to-r from-purple-900/50 via-pink-800/30 to-blue-900/50"
+          style={{
+            animation: 'gradientMove 8s ease-in-out infinite alternate',
+          }}
+        />
+      </div>
+
       {/* Animated stars/particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(50)].map((_, i) => (
+        {stars.map((star) => (
           <div
-            key={i}
-            className="absolute rounded-full bg-white animate-pulse"
+            key={star.id}
+            className="absolute rounded-full bg-white"
             style={{
-              width: Math.random() * 3 + 1 + 'px',
-              height: Math.random() * 3 + 1 + 'px',
-              top: Math.random() * 100 + '%',
-              left: Math.random() * 100 + '%',
-              animationDelay: Math.random() * 3 + 's',
-              animationDuration: Math.random() * 2 + 2 + 's',
-              opacity: Math.random() * 0.7 + 0.3,
+              width: star.size + 'px',
+              height: star.size + 'px',
+              top: star.y + '%',
+              left: star.x + '%',
+              opacity: star.opacity,
+              animation: `twinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
             }}
           />
         ))}
       </div>
 
-      {/* Gradient orbs */}
-      <div className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-600/30 rounded-full blur-[100px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-pink-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
+      {/* Floating gradient orbs with animation */}
+      <div 
+        className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-600/30 rounded-full blur-[100px]"
+        style={{ animation: 'float 6s ease-in-out infinite' }}
+      />
+      <div 
+        className="absolute bottom-1/4 right-0 w-96 h-96 bg-pink-500/20 rounded-full blur-[120px]"
+        style={{ animation: 'float 8s ease-in-out 1s infinite reverse' }}
+      />
+      <div 
+        className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]"
+        style={{ animation: 'float 7s ease-in-out 2s infinite' }}
+      />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-20">
         <div className="max-w-2xl">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6 animate-fade-in">
-            <Sparkles className="h-4 w-4 text-yellow-400" />
+            <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
             <span className="text-sm text-gray-200">Nền tảng học tập số 1 cho sinh viên FPT</span>
           </div>
 

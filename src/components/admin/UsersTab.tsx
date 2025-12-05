@@ -46,12 +46,13 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
       return;
     }
 
-    const headers = ['ID', 'Tên', 'SĐT', 'Số đơn hàng', 'Tổng chi tiêu', 'Ngày đăng ký'];
+    const headers = ['ID', 'Tên', 'Email', 'SĐT', 'Số đơn hàng', 'Tổng chi tiêu', 'Ngày đăng ký'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => [
         user.id,
         `"${user.name}"`,
+        user.email || 'Chưa có',
         user.phone || 'Chưa có',
         user.order_count,
         user.total_spent,
@@ -93,6 +94,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Tên</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>SĐT</TableHead>
               <TableHead>Số đơn hàng</TableHead>
               <TableHead>Tổng chi tiêu</TableHead>
@@ -103,7 +105,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Chưa có người dùng nào
                 </TableCell>
               </TableRow>
@@ -112,6 +114,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
                 <TableRow key={user.id}>
                   <TableCell className="font-mono text-xs">{user.id.slice(0, 8)}...</TableCell>
                   <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell className="text-sm">{user.email || 'Chưa có'}</TableCell>
                   <TableCell>{user.phone || 'Chưa có'}</TableCell>
                   <TableCell>
                     <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">

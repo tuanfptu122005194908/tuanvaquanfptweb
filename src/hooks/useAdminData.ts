@@ -12,6 +12,7 @@ export interface AdminStats {
 export interface AdminUser {
   id: string;
   name: string;
+  email: string | null;
   phone: string | null;
   order_count: number;
   total_spent: number;
