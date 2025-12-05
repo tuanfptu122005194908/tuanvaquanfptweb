@@ -1,77 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
-
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  delay: number;
-  duration: number;
-  opacity: number;
-}
+import heroBanner from "@/assets/hero-banner.png";
 
 const Hero = () => {
-  const [stars, setStars] = useState<Star[]>([]);
-
-  useEffect(() => {
-    const newStars: Star[] = [];
-    for (let i = 0; i < 60; i++) {
-      newStars.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        delay: Math.random() * 5,
-        duration: Math.random() * 3 + 2,
-        opacity: Math.random() * 0.7 + 0.3,
-      });
-    }
-    setStars(newStars);
-  }, []);
-
   return (
-    <section className="relative min-h-[500px] flex items-center overflow-hidden bg-gradient-to-br from-[#0f0a1e] via-[#1a1035] to-[#251448]">
-      {/* Animated moving gradient background */}
-      <div className="absolute inset-0 opacity-50">
-        <div 
-          className="absolute inset-0 bg-gradient-to-r from-purple-900/50 via-pink-800/30 to-blue-900/50"
-          style={{
-            animation: 'gradientMove 8s ease-in-out infinite alternate',
-          }}
-        />
-      </div>
-
-      {/* Animated stars/particles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {stars.map((star) => (
-          <div
-            key={star.id}
-            className="absolute rounded-full bg-white"
-            style={{
-              width: star.size + 'px',
-              height: star.size + 'px',
-              top: star.y + '%',
-              left: star.x + '%',
-              opacity: star.opacity,
-              animation: `twinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Floating gradient orbs with animation */}
+    <section className="relative min-h-[500px] flex items-center overflow-hidden">
+      {/* Background image */}
       <div 
-        className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-600/30 rounded-full blur-[100px]"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBanner})` }}
+      />
+      
+      {/* Overlay gradient for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0f0a1e]/80 via-[#1a1035]/60 to-transparent" />
+      
+      {/* Subtle animated glow effects */}
+      <div 
+        className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px]"
         style={{ animation: 'float 6s ease-in-out infinite' }}
       />
       <div 
-        className="absolute bottom-1/4 right-0 w-96 h-96 bg-pink-500/20 rounded-full blur-[120px]"
-        style={{ animation: 'float 8s ease-in-out 1s infinite reverse' }}
-      />
-      <div 
-        className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]"
+        className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500/15 rounded-full blur-[80px]"
         style={{ animation: 'float 7s ease-in-out 2s infinite' }}
       />
 
