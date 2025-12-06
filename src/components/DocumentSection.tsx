@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BookOpen, ShoppingCart } from "lucide-react";
+import { BookOpen, ShoppingCart, Loader2 } from "lucide-react";
 import type { CartItem } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
@@ -12,59 +11,53 @@ interface DocumentSectionProps {
 
 const PRICE_PER_COURSE = 70000;
 
-// Hardcoded semester structure - can be enhanced later to come from DB
-const semesterStructure = [
-  {
-    id: 'semester1',
-    name: 'Kỳ 1',
-    courses: [
-      { code: 'SSL101', name: 'Academic Skills for University Success' },
-      { code: 'CEA201', name: 'Computer Organization and Architecture' },
-      { code: 'CSI106', name: 'Introduction to Computer Science' },
-      { code: 'PRF192', name: 'Programming Fundamentals' },
-      { code: 'MAE101', name: 'Mathematics for Engineering' },
-    ],
-  },
-  {
-    id: 'semester2',
-    name: 'Kỳ 2',
-    courses: [
-      { code: 'NWC204', name: 'Computer Networking' },
-      { code: 'OSG202', name: 'Operating Systems' },
-      { code: 'MAD101', name: 'Discrete Mathematics' },
-      { code: 'WED201', name: 'Web Design' },
-      { code: 'PRO192', name: 'Object-Oriented Programming' },
-    ],
-  },
-  {
-    id: 'semester3',
-    name: 'Kỳ 3',
-    courses: [
-      { code: 'LAB211', name: 'OOP with Java Lab' },
-      { code: 'JPD113', name: 'Elementary Japanese 1-A1.1' },
-      { code: 'DBI202', name: 'Database Systems' },
-      { code: 'CSD201', name: 'Data Structures and Algorithms' },
-      { code: 'MAS291', name: 'Statistics and Probability' },
-    ],
-  },
-];
-
 const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
   const { products: documents, isLoading } = useProducts('document');
 
-  // Get price from DB or fallback to default
-  const pricePerCourse = documents.length > 0 ? documents[0].price : PRICE_PER_COURSE;
+  // Group documents by semester
+  const documentsBySemester = documents.reduce((acc, doc) => {
+    const semester = doc.semester || 'Khác';
+    if (!acc[semester]) {
+      acc[semester] = [];
+    }
+    acc[semester].push(doc);
+    return acc;
+  }, {} as Record<string, typeof documents>);
 
-  const handleAddCourseToCart = (semesterName: string, course: { code: string; name: string }) => {
+  // Sort semesters: "Kỳ 1", "Kỳ 2", etc., then "Khác" at the end
+  const sortedSemesters = Object.keys(documentsBySemester).sort((a, b) => {
+    if (a === 'Khác') return 1;
+    if (b === 'Khác') return -1;
+    return a.localeCompare(b, 'vi');
+  });
+
+  const handleAddToCart = (doc: typeof documents[0]) => {
     onAddToCart({
-      id: `doc-${course.code}`,
-      code: course.code,
-      name: `Tài liệu ${course.code} - ${course.name}`,
-      price: pricePerCourse,
+      id: `doc-${doc.code}`,
+      code: doc.code,
+      name: `Tài liệu ${doc.code} - ${doc.name.replace('Tài liệu ôn thi ', '')}`,
+      price: doc.price,
       type: 'document',
     });
-    toast.success(`Đã thêm tài liệu ${course.code} vào giỏ hàng!`);
+    toast.success(`Đã thêm tài liệu ${doc.code} vào giỏ hàng!`);
   };
+
+  if (isLoading) {
+    return (
+      <section id="documents" className="py-16 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="container mx-auto px-4 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
+  if (documents.length === 0) {
+    return null;
+  }
+
+  // Get price from first document or fallback
+  const pricePerCourse = documents[0]?.price || PRICE_PER_COURSE;
 
   return (
     <section id="documents" className="py-16 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -80,35 +73,36 @@ const DocumentSection = ({ onAddToCart }: DocumentSectionProps) => {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-8">
-          {semesterStructure.map((pkg) => (
+          {sortedSemesters.map((semester) => (
             <Card 
-              key={pkg.id}
+              key={semester}
               className="p-6 hover:shadow-2xl transition-all duration-300"
             >
-              <h3 className="text-2xl font-bold mb-4 text-primary">{pkg.name}</h3>
+              <h3 className="text-2xl font-bold mb-4 text-primary">{semester}</h3>
               
-              {/* Course list with buy buttons - show all courses */}
               <div className="space-y-2">
-                {pkg.courses.map((course) => (
+                {documentsBySemester[semester].map((doc) => (
                   <div 
-                    key={course.code} 
+                    key={doc.id} 
                     className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <BookOpen className="h-4 w-4 text-secondary flex-shrink-0" />
                       <div className="min-w-0">
-                        <span className="font-bold text-sm">{course.code}</span>
-                        <p className="text-xs text-muted-foreground truncate">{course.name}</p>
+                        <span className="font-bold text-sm">{doc.code}</span>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {doc.description || doc.name.replace('Tài liệu ôn thi ', '')}
+                        </p>
                       </div>
                     </div>
                     <Button 
                       size="sm" 
                       variant="outline"
                       className="flex-shrink-0 h-8 px-2"
-                      onClick={() => handleAddCourseToCart(pkg.name, course)}
+                      onClick={() => handleAddToCart(doc)}
                     >
                       <ShoppingCart className="h-3 w-3 mr-1" />
-                      {pricePerCourse.toLocaleString('vi-VN')}đ
+                      {doc.price.toLocaleString('vi-VN')}đ
                     </Button>
                   </div>
                 ))}
