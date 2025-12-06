@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import { SearchBar } from "@/components/SearchBar";
 import CourseSection from "@/components/CourseSection";
 import EnglishSection from "@/components/EnglishSection";
 import DocumentSection from "@/components/DocumentSection";
@@ -55,6 +56,11 @@ const Index = () => {
       />
       
       <Hero />
+      
+      <div className="container mx-auto px-4 py-6">
+        <SearchBar onAddToCart={addToCart} />
+      </div>
+      
       <CourseSection onAddToCart={addToCart} />
       <EnglishSection onAddToCart={addToCart} />
       <DocumentSection onAddToCart={addToCart} />
