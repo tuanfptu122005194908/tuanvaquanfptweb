@@ -52,6 +52,19 @@ const initialFormData: FormData = {
   sort_order: 0,
 };
 
+const documentFormData: FormData = {
+  type: 'document',
+  code: '',
+  name: '',
+  description: 'Tài liệu ôn thi',
+  price: 70000,
+  image_url: '',
+  semester: 'Kỳ 1',
+  services: '',
+  active: true,
+  sort_order: 0,
+};
+
 const ProductsTab = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,10 +99,27 @@ const ProductsTab = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData(initialFormData);
-    setEditingId(null);
-    setShowForm(false);
+  const resetForm = (keepDocumentMode = false) => {
+    if (keepDocumentMode && formData.type === 'document') {
+      // Keep document mode, reset only code and name for continuous adding
+      setFormData({
+        ...documentFormData,
+        semester: formData.semester, // Keep the same semester
+      });
+      setEditingId(null);
+    } else {
+      setFormData(initialFormData);
+      setEditingId(null);
+      setShowForm(false);
+    }
+  };
+
+  const handleTypeChange = (type: 'course' | 'document' | 'english') => {
+    if (type === 'document') {
+      setFormData(documentFormData);
+    } else {
+      setFormData({ ...initialFormData, type });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,9 +154,16 @@ const ProductsTab = () => {
 
         if (error) throw error;
         toast.success('Đã thêm sản phẩm mới!');
+        
+        // If adding document, keep the form open for continuous adding
+        if (formData.type === 'document') {
+          resetForm(true); // Keep document mode
+          fetchProducts();
+          return;
+        }
       }
 
-      resetForm();
+      resetForm(false);
       fetchProducts();
     } catch (error: any) {
       toast.error('Lỗi: ' + error.message);
@@ -228,7 +265,7 @@ const ProductsTab = () => {
             <h3 className="text-lg font-semibold">
               {editingId ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}
             </h3>
-            <Button variant="ghost" size="icon" onClick={resetForm}>
+            <Button variant="ghost" size="icon" onClick={() => resetForm(false)}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -239,7 +276,7 @@ const ProductsTab = () => {
                 <Label>Loại sản phẩm</Label>
                 <Select 
                   value={formData.type} 
-                  onValueChange={(v: 'course' | 'document' | 'english') => setFormData({ ...formData, type: v })}
+                  onValueChange={(v: 'course' | 'document' | 'english') => handleTypeChange(v)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -252,98 +289,140 @@ const ProductsTab = () => {
                 </Select>
               </div>
 
-              <div>
-                <Label>Mã sản phẩm</Label>
-                <Input
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="VD: MAE101, LUK..."
-                  required
-                />
-              </div>
+              {formData.type === 'document' ? (
+                <div>
+                  <Label>Học kỳ</Label>
+                  <Select 
+                    value={formData.semester} 
+                    onValueChange={(v) => setFormData({ ...formData, semester: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn kỳ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Kỳ 1">Kỳ 1</SelectItem>
+                      <SelectItem value="Kỳ 2">Kỳ 2</SelectItem>
+                      <SelectItem value="Kỳ 3">Kỳ 3</SelectItem>
+                      <SelectItem value="Kỳ 4">Kỳ 4</SelectItem>
+                      <SelectItem value="Kỳ 5">Kỳ 5</SelectItem>
+                      <SelectItem value="Kỳ 6">Kỳ 6</SelectItem>
+                      <SelectItem value="Kỳ 7">Kỳ 7</SelectItem>
+                      <SelectItem value="Kỳ 8">Kỳ 8</SelectItem>
+                      <SelectItem value="Kỳ 9">Kỳ 9</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div>
+                  <Label>Mã sản phẩm</Label>
+                  <Input
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    placeholder="VD: MAE101, LUK..."
+                    required
+                  />
+                </div>
+              )}
             </div>
 
-            <div>
-              <Label>Tên sản phẩm</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nhập tên sản phẩm"
-                required
-              />
-            </div>
+            {/* Simplified form for documents */}
+            {formData.type === 'document' ? (
+              <>
+                <div>
+                  <Label>Mã môn học</Label>
+                  <Input
+                    value={formData.code}
+                    onChange={(e) => {
+                      const code = e.target.value.toUpperCase();
+                      setFormData({ 
+                        ...formData, 
+                        code: code,
+                        name: `Tài liệu ôn thi ${code}`
+                      });
+                    }}
+                    placeholder="VD: MAE101, PRF192..."
+                    required
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Giá mặc định: <span className="font-semibold text-primary">70.000đ</span> | 
+                  Không cần ảnh
+                </p>
+              </>
+            ) : (
+              <>
+                <div>
+                  <Label>Tên sản phẩm</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Nhập tên sản phẩm"
+                    required
+                  />
+                </div>
 
-            <div>
-              <Label>Mô tả</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Nhập mô tả sản phẩm"
-                rows={3}
-              />
-            </div>
+                <div>
+                  <Label>Mô tả</Label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Nhập mô tả sản phẩm"
+                    rows={3}
+                  />
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Giá (VNĐ)</Label>
-                <Input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  required
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Giá (VNĐ)</Label>
+                    <Input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      required
+                    />
+                  </div>
 
-              <div>
-                <Label>Thứ tự hiển thị</Label>
-                <Input
-                  type="number"
-                  value={formData.sort_order}
-                  onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label>Thứ tự hiển thị</Label>
+                    <Input
+                      type="number"
+                      value={formData.sort_order}
+                      onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <Label className="mb-2 block">Ảnh sản phẩm</Label>
-              <ImageUpload
-                value={formData.image_url}
-                onChange={(url) => setFormData({ ...formData, image_url: url })}
-                onUpload={uploadImage}
-                isUploading={isUploading}
-                placeholder="Tải ảnh"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Hoặc nhập URL ảnh trực tiếp:
-              </p>
-              <Input
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://example.com/image.png"
-                className="mt-1"
-              />
-            </div>
+                <div>
+                  <Label className="mb-2 block">Ảnh sản phẩm</Label>
+                  <ImageUpload
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    onUpload={uploadImage}
+                    isUploading={isUploading}
+                    placeholder="Tải ảnh"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Hoặc nhập URL ảnh trực tiếp:
+                  </p>
+                  <Input
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    placeholder="https://example.com/image.png"
+                    className="mt-1"
+                  />
+                </div>
 
-            {formData.type === 'document' && (
-              <div>
-                <Label>Học kỳ</Label>
-                <Input
-                  value={formData.semester}
-                  onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                  placeholder="VD: Kỳ 1, Kỳ 2..."
-                />
-              </div>
-            )}
-
-            {formData.type === 'english' && (
-              <div>
-                <Label>Dịch vụ (phân cách bằng dấu phẩy)</Label>
-                <Input
-                  value={formData.services}
-                  onChange={(e) => setFormData({ ...formData, services: e.target.value })}
-                  placeholder="Edit Video, Làm Slide, Hỗ Trợ Debate..."
-                />
-              </div>
+                {formData.type === 'english' && (
+                  <div>
+                    <Label>Dịch vụ (phân cách bằng dấu phẩy)</Label>
+                    <Input
+                      value={formData.services}
+                      onChange={(e) => setFormData({ ...formData, services: e.target.value })}
+                      placeholder="Edit Video, Làm Slide, Hỗ Trợ Debate..."
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex items-center gap-2">
@@ -355,8 +434,12 @@ const ProductsTab = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit">{editingId ? 'Cập nhật' : 'Thêm mới'}</Button>
-              <Button type="button" variant="outline" onClick={resetForm}>Hủy</Button>
+              <Button type="submit">
+                {editingId ? 'Cập nhật' : (formData.type === 'document' ? 'Thêm & Tiếp tục' : 'Thêm mới')}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => resetForm(false)}>
+                {formData.type === 'document' && !editingId ? 'Đóng' : 'Hủy'}
+              </Button>
             </div>
           </form>
         </Card>
