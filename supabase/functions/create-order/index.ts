@@ -201,6 +201,39 @@ serve(async (req) => {
       }
     }
 
+    // Send order confirmation emails (non-blocking)
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      
+      console.log('Sending order confirmation emails...');
+      
+      fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          customerName: customerInfo.name,
+          customerEmail: customerInfo.email,
+          customerPhone: customerInfo.phone,
+          items: items,
+          total: finalTotal,
+          discountAmount: discountAmount,
+          couponCode: couponCode || null,
+          note: customerInfo.note || '',
+        }),
+      }).then(res => res.json())
+        .then(data => console.log('Email sent result:', data))
+        .catch(err => console.error('Email send error:', err));
+        
+    } catch (emailError) {
+      console.error('Failed to trigger email:', emailError);
+      // Don't fail the order if email fails
+    }
+
     return new Response(
       JSON.stringify({ success: true, order }),
       {
