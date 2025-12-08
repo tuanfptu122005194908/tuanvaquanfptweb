@@ -205,7 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to customer
     console.log('Sending confirmation email to customer:', data.customerEmail);
     const customerEmailResult = await resend.emails.send({
-      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      from: "TUAN VA QUAN <noreply@tuanvaquanweb.com>",
       to: [data.customerEmail],
       subject: `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
       html: customerEmailHtml,
@@ -215,7 +215,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification to admin
     console.log('Sending notification email to admin:', ADMIN_EMAIL);
     const adminEmailResult = await resend.emails.send({
-      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      from: "TUAN VA QUAN <noreply@tuanvaquanweb.com>",
       to: [ADMIN_EMAIL],
       subject: `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
       html: adminEmailHtml,
