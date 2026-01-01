@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import heroBanner from "@/assets/hero-banner.png";
+import heroBannerAnime from "@/assets/hero-banner-anime.png";
 
 const Hero = () => {
   return (
@@ -8,7 +8,7 @@ const Hero = () => {
       {/* Background image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBanner})` }}
+        style={{ backgroundImage: `url(${heroBannerAnime})` }}
       />
       
       {/* Overlay gradient for better text readability */}
