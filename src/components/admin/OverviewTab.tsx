@@ -1,8 +1,9 @@
-import { Card } from "@/components/ui/card";
-import { ShoppingBag, DollarSign, Users, Clock, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShoppingBag, DollarSign, Users, Clock, TrendingUp, ArrowUpRight, Package } from "lucide-react";
 import type { Order } from "@/hooks/useOrders";
 import type { AdminStats } from "@/hooks/useAdminData";
 import SalesChart from "./SalesChart";
+import { Badge } from "@/components/ui/badge";
 
 interface OverviewTabProps {
   stats: AdminStats | null;
@@ -16,51 +17,39 @@ const OverviewTab = ({ stats, orders, isLoading }: OverviewTabProps) => {
       icon: ShoppingBag,
       label: "Tổng đơn hàng",
       value: stats?.totalOrders || 0,
-      gradient: "from-blue-500 to-cyan-400",
-      bgGradient: "from-blue-500/10 to-cyan-400/10",
-      iconBg: "bg-blue-500",
-      trend: "+12%",
-      trendUp: true,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
       icon: DollarSign,
       label: "Tổng doanh thu",
-      value: `${(stats?.totalRevenue || 0).toLocaleString('vi-VN')}đ`,
-      gradient: "from-emerald-500 to-green-400",
-      bgGradient: "from-emerald-500/10 to-green-400/10",
-      iconBg: "bg-emerald-500",
-      trend: "+8%",
-      trendUp: true,
+      value: `${((stats?.totalRevenue || 0) / 1000000).toFixed(1)}M₫`,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
     },
     {
       icon: Users,
-      label: "Tổng người dùng",
+      label: "Người dùng",
       value: stats?.totalUsers || 0,
-      gradient: "from-purple-500 to-violet-400",
-      bgGradient: "from-purple-500/10 to-violet-400/10",
-      iconBg: "bg-purple-500",
-      trend: "+24%",
-      trendUp: true,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
     },
     {
       icon: Clock,
-      label: "Đơn chờ xử lý",
+      label: "Chờ xử lý",
       value: stats?.pendingOrders || 0,
-      gradient: "from-orange-500 to-amber-400",
-      bgGradient: "from-orange-500/10 to-amber-400/10",
-      iconBg: "bg-orange-500",
-      trend: "-3%",
-      trendUp: false,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
     },
   ];
 
   const recentOrders = orders.slice(0, 5);
 
-  const statusStyles = {
-    pending: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Chờ xử lý' },
-    processing: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Đang xử lý' },
-    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Hoàn thành' },
-    cancelled: { bg: 'bg-red-100', text: 'text-red-700', label: 'Đã hủy' },
+  const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    pending: { label: 'Chờ xử lý', variant: 'secondary' },
+    processing: { label: 'Đang xử lý', variant: 'default' },
+    completed: { label: 'Hoàn thành', variant: 'outline' },
+    cancelled: { label: 'Đã hủy', variant: 'destructive' },
   };
 
   if (isLoading) {
@@ -75,93 +64,122 @@ const OverviewTab = ({ stats, orders, isLoading }: OverviewTabProps) => {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Stats Cards with Modern Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, idx) => (
-          <Card 
-            key={idx} 
-            className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-1 group cursor-default bg-gradient-to-br ${stat.bgGradient}`}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-20 blur-2xl rounded-full -translate-y-1/2 translate-x-1/2" />
-            
-            <div className="p-6 relative">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-xl ${stat.iconBg} shadow-lg`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+          <Card key={idx} className="border bg-card hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
-                <div className={`flex items-center gap-1 text-sm font-medium ${stat.trendUp ? 'text-emerald-600' : 'text-red-500'}`}>
-                  <TrendingUp className={`h-4 w-4 ${!stat.trendUp && 'rotate-180'}`} />
-                  {stat.trend}
-                </div>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-              </div>
-              
-              <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient} opacity-60`} />
-            </div>
+              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
+            </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Sales Chart */}
-      <SalesChart orders={orders} />
-
-      {/* Recent Orders with Modern Design */}
-      <Card className="border-0 shadow-lg overflow-hidden">
-        <div className="p-6 border-b bg-gradient-to-r from-slate-50 to-white">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" />
-              Đơn hàng gần đây
-            </h3>
-            <button className="text-sm text-primary hover:underline flex items-center gap-1">
-              Xem tất cả <ArrowUpRight className="h-4 w-4" />
-            </button>
-          </div>
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <SalesChart orders={orders} />
         </div>
         
-        <div className="divide-y">
+        {/* Quick Stats */}
+        <Card className="border bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Package className="h-4 w-4 text-primary" />
+              Thống kê nhanh
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Đơn hôm nay</span>
+                <span className="font-semibold text-foreground">
+                  {orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Doanh thu hôm nay</span>
+                <span className="font-semibold text-emerald-600">
+                  {orders
+                    .filter(o => new Date(o.created_at).toDateString() === new Date().toDateString())
+                    .reduce((sum, o) => sum + o.total, 0)
+                    .toLocaleString('vi-VN')}₫
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Hoàn thành</span>
+                <span className="font-semibold text-foreground">
+                  {orders.filter(o => o.status === 'completed').length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Đã hủy</span>
+                <span className="font-semibold text-destructive">
+                  {orders.filter(o => o.status === 'cancelled').length}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Orders */}
+      <Card className="border bg-card">
+        <CardHeader className="border-b bg-muted/30">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 text-primary" />
+              Đơn hàng gần đây
+            </CardTitle>
+            <button className="text-sm text-primary hover:underline flex items-center gap-1">
+              Xem tất cả <ArrowUpRight className="h-3 w-3" />
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
           {recentOrders.length === 0 ? (
             <div className="p-12 text-center">
               <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground">Chưa có đơn hàng nào</p>
             </div>
           ) : (
-            recentOrders.map((order, index) => (
-              <div 
-                key={order.id} 
-                className="p-4 hover:bg-slate-50/50 transition-colors flex items-center justify-between gap-4"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary font-bold">
-                    #{order.id}
+            <div className="divide-y">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                      #{order.id}
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{order.customer_info.name}</p>
+                      <p className="text-xs text-muted-foreground">{order.customer_info.phone}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground">{order.customer_info.name}</h4>
-                    <p className="text-sm text-muted-foreground">{order.customer_info.phone}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${statusStyles[order.status].bg} ${statusStyles[order.status].text}`}>
-                    {statusStyles[order.status].label}
-                  </span>
-                  <div className="text-right">
-                    <p className="font-bold text-primary text-lg">{order.total.toLocaleString('vi-VN')}đ</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString('vi-VN')}
-                    </p>
+                  
+                  <div className="flex items-center gap-3">
+                    <Badge variant={statusConfig[order.status]?.variant || 'secondary'}>
+                      {statusConfig[order.status]?.label || order.status}
+                    </Badge>
+                    <div className="text-right">
+                      <p className="font-semibold text-foreground">{order.total.toLocaleString('vi-VN')}₫</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(order.created_at).toLocaleDateString('vi-VN')}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
-        </div>
+        </CardContent>
       </Card>
     </div>
   );
