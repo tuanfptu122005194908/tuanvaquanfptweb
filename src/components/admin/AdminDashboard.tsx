@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BarChart3, 
-  ArrowLeft, 
   LogOut, 
   RefreshCw, 
   LayoutDashboard, 
@@ -10,7 +8,11 @@ import {
   Users, 
   Ticket, 
   Package, 
-  Settings 
+  Settings,
+  Menu,
+  X,
+  Home,
+  Bell
 } from "lucide-react";
 import { useState } from "react";
 import OverviewTab from "./OverviewTab";
@@ -21,6 +23,7 @@ import ProductsTab from "./ProductsTab";
 import SettingsTab from "./SettingsTab";
 import { toast } from "sonner";
 import { useAdminData } from "@/hooks/useAdminData";
+import { cn } from "@/lib/utils";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -30,6 +33,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const { stats, orders, users, isLoading, refreshData } = useAdminData();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -38,115 +43,215 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     toast.success("Đã cập nhật dữ liệu!");
   };
 
-  const tabs = [
-    { value: "overview", label: "Tổng quan", icon: LayoutDashboard },
-    { value: "orders", label: "Đơn hàng", icon: ShoppingCart },
-    { value: "users", label: "Người dùng", icon: Users },
-    { value: "coupons", label: "Mã giảm giá", icon: Ticket },
-    { value: "products", label: "Sản phẩm", icon: Package },
-    { value: "settings", label: "Cài đặt", icon: Settings },
+  const menuItems = [
+    { id: "overview", label: "Tổng quan", icon: LayoutDashboard },
+    { id: "orders", label: "Đơn hàng", icon: ShoppingCart, badge: stats?.pendingOrders },
+    { id: "users", label: "Người dùng", icon: Users },
+    { id: "products", label: "Sản phẩm", icon: Package },
+    { id: "coupons", label: "Mã giảm giá", icon: Ticket },
+    { id: "settings", label: "Cài đặt", icon: Settings },
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-blue-50/50">
-      {/* Header with Glassmorphism */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-primary rounded-xl blur-lg opacity-50"></div>
-                <div className="relative p-3 bg-gradient-primary rounded-xl shadow-lg">
-                  <BarChart3 className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Admin Dashboard
-                </h1>
-                <p className="text-sm text-muted-foreground">Quản lý hệ thống TUAN VA QUAN</p>
-              </div>
-            </div>
+  const handleMenuClick = (id: string) => {
+    setActiveTab(id);
+    setMobileSidebarOpen(false);
+  };
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => window.location.href = '/'}
-                className="hover:bg-white/50"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Trang chính</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="hover:bg-white/50"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={onLogout}
-                className="hover:bg-red-50 hover:text-red-600"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Đăng xuất</span>
-              </Button>
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return <OverviewTab stats={stats} orders={orders} isLoading={isLoading} />;
+      case "orders":
+        return <OrdersTab orders={orders} isLoading={isLoading} onRefresh={refreshData} />;
+      case "users":
+        return <UsersTab users={users} isLoading={isLoading} onRefresh={refreshData} />;
+      case "products":
+        return <ProductsTab />;
+      case "coupons":
+        return <CouponsTab />;
+      case "settings":
+        return <SettingsTab />;
+      default:
+        return <OverviewTab stats={stats} orders={orders} isLoading={isLoading} />;
+    }
+  };
+
+  const currentPage = menuItems.find(item => item.id === activeTab);
+
+  return (
+    <div className="min-h-screen bg-muted/30 flex">
+      {/* Mobile Overlay */}
+      {mobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed lg:sticky top-0 left-0 z-50 h-screen bg-card border-r transition-all duration-300 flex flex-col",
+        sidebarOpen ? "w-64" : "w-20",
+        mobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 border-b bg-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+              <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
+            {sidebarOpen && (
+              <div className="overflow-hidden">
+                <h1 className="font-bold text-foreground whitespace-nowrap">Admin Panel</h1>
+                <p className="text-xs text-muted-foreground whitespace-nowrap">TUAN VA QUAN</p>
+              </div>
+            )}
           </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="hidden lg:flex h-8 w-8"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden h-8 w-8"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-      </header>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleMenuClick(item.id)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
+                activeTab === item.id 
+                  ? "bg-primary text-primary-foreground shadow-md" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <item.icon className={cn(
+                "h-5 w-5 shrink-0",
+                activeTab === item.id ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+              )} />
+              {sidebarOpen && (
+                <span className="font-medium text-sm whitespace-nowrap">{item.label}</span>
+              )}
+              {item.badge && item.badge > 0 && (
+                <span className={cn(
+                  "ml-auto text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center",
+                  activeTab === item.id 
+                    ? "bg-primary-foreground/20 text-primary-foreground" 
+                    : "bg-destructive text-destructive-foreground",
+                  !sidebarOpen && "absolute -right-1 -top-1"
+                )}>
+                  {item.badge}
+                </span>
+              )}
+              {!sidebarOpen && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                  {item.label}
+                </div>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t">
+          <Button 
+            variant="ghost" 
+            onClick={() => window.location.href = '/'}
+            className={cn(
+              "w-full justify-start gap-3 text-muted-foreground hover:text-foreground",
+              !sidebarOpen && "justify-center px-0"
+            )}
+          >
+            <Home className="h-5 w-5" />
+            {sidebarOpen && <span className="text-sm">Về trang chính</span>}
+          </Button>
+          <Button 
+            variant="ghost" 
+            onClick={onLogout}
+            className={cn(
+              "w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10",
+              !sidebarOpen && "justify-center px-0"
+            )}
+          >
+            <LogOut className="h-5 w-5" />
+            {sidebarOpen && <span className="text-sm">Đăng xuất</span>}
+          </Button>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Modern Tab Navigation */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/40 backdrop-blur-sm rounded-2xl"></div>
-            <TabsList className="relative w-full grid grid-cols-3 md:grid-cols-6 gap-2 p-2 bg-transparent h-auto">
-              {tabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="relative flex flex-col md:flex-row items-center gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-white/60 data-[state=inactive]:hover:bg-white transition-all duration-300"
-                >
-                  <tab.icon className="h-4 w-4" />
-                  <span className="text-xs md:text-sm font-medium">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 h-16 bg-card border-b flex items-center justify-between px-4 lg:px-6">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden"
+              onClick={() => setMobileSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                {currentPage?.icon && <currentPage.icon className="h-5 w-5 text-primary" />}
+                {currentPage?.label || "Dashboard"}
+              </h2>
+              <p className="text-xs text-muted-foreground hidden sm:block">
+                Quản lý hệ thống TUAN VA QUAN
+              </p>
+            </div>
           </div>
 
-          {/* Tab Contents with Animation */}
-          <div className="animate-in fade-in-50 duration-300">
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTab stats={stats} orders={orders} isLoading={isLoading} />
-            </TabsContent>
-
-            <TabsContent value="orders" className="mt-0">
-              <OrdersTab orders={orders} isLoading={isLoading} onRefresh={refreshData} />
-            </TabsContent>
-
-            <TabsContent value="users" className="mt-0">
-              <UsersTab users={users} isLoading={isLoading} onRefresh={refreshData} />
-            </TabsContent>
-
-            <TabsContent value="coupons" className="mt-0">
-              <CouponsTab />
-            </TabsContent>
-
-            <TabsContent value="products" className="mt-0">
-              <ProductsTab />
-            </TabsContent>
-
-            <TabsContent value="settings" className="mt-0">
-              <SettingsTab />
-            </TabsContent>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+              <span className="hidden sm:inline">Làm mới</span>
+            </Button>
+            <Button variant="outline" size="icon" className="relative">
+              <Bell className="h-4 w-4" />
+              {stats?.pendingOrders && stats.pendingOrders > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                  {stats.pendingOrders > 9 ? '9+' : stats.pendingOrders}
+                </span>
+              )}
+            </Button>
           </div>
-        </Tabs>
-      </main>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            {renderContent()}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="h-12 border-t bg-card flex items-center justify-center px-4">
+          <p className="text-xs text-muted-foreground">
+            © 2024 TUAN VA QUAN. Admin Dashboard v2.0
+          </p>
+        </footer>
+      </div>
     </div>
   );
 };

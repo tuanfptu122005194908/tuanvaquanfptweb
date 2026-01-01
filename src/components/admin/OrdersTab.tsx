@@ -1,6 +1,24 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Phone, Mail, User, Package, ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Trash2, 
+  Phone, 
+  Mail, 
+  User, 
+  Package, 
+  ChevronDown, 
+  ChevronUp, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  Loader2,
+  ShoppingCart,
+  Search,
+  Filter
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Order } from "@/hooks/useOrders";
@@ -15,28 +33,30 @@ interface OrdersTabProps {
 const statusConfig = {
   pending: { 
     label: 'Chờ xử lý', 
-    className: 'bg-amber-100 text-amber-700 border-amber-200',
+    variant: 'secondary' as const,
     icon: Clock,
   },
   processing: { 
     label: 'Đang xử lý', 
-    className: 'bg-blue-100 text-blue-700 border-blue-200',
+    variant: 'default' as const,
     icon: Loader2,
   },
   completed: { 
     label: 'Hoàn thành', 
-    className: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    variant: 'outline' as const,
     icon: CheckCircle,
   },
   cancelled: { 
     label: 'Đã hủy', 
-    className: 'bg-red-100 text-red-700 border-red-200',
+    variant: 'destructive' as const,
     icon: XCircle,
   },
 };
 
 const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const updateOrderStatus = async (orderId: number, newStatus: Order['status']) => {
     try {
@@ -56,7 +76,7 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
   };
 
   const deleteOrder = async (orderId: number) => {
-    if (!confirm('⚠️ Bạn có chắc chắn muốn xóa đơn hàng này? Hành động này không thể hoàn tác!')) {
+    if (!confirm('⚠️ Bạn có chắc chắn muốn xóa đơn hàng này?')) {
       return;
     }
 
@@ -76,6 +96,17 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
     }
   };
 
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      order.customer_info.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customer_info.phone.includes(searchQuery) ||
+      order.id.toString().includes(searchQuery);
+    
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -88,168 +119,219 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Quản lý đơn hàng</h2>
-        <div className="text-sm text-muted-foreground">
-          Tổng: <span className="font-bold text-foreground">{orders.length}</span> đơn hàng
-        </div>
-      </div>
+      <Card className="border bg-card">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <ShoppingCart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Quản lý đơn hàng</h2>
+                <p className="text-sm text-muted-foreground">
+                  {filteredOrders.length} / {orders.length} đơn hàng
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Tìm theo tên, SĐT, mã đơn..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-background">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="pending">Chờ xử lý</SelectItem>
+                  <SelectItem value="processing">Đang xử lý</SelectItem>
+                  <SelectItem value="completed">Hoàn thành</SelectItem>
+                  <SelectItem value="cancelled">Đã hủy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {orders.length === 0 ? (
-        <Card className="p-12 text-center border-0 shadow-lg">
-          <Package className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground text-lg">Chưa có đơn hàng nào</p>
+      {/* Orders List */}
+      {filteredOrders.length === 0 ? (
+        <Card className="border bg-card">
+          <CardContent className="p-12 text-center">
+            <Package className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+            <p className="text-muted-foreground text-lg">
+              {searchQuery || statusFilter !== "all" 
+                ? "Không tìm thấy đơn hàng phù hợp" 
+                : "Chưa có đơn hàng nào"}
+            </p>
+          </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const StatusIcon = statusConfig[order.status].icon;
+        <div className="space-y-3">
+          {filteredOrders.map((order) => {
+            const config = statusConfig[order.status];
             const isExpanded = expandedOrder === order.id;
             
             return (
-              <Card 
-                key={order.id} 
-                className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
+              <Card key={order.id} className="border bg-card overflow-hidden">
                 {/* Order Header */}
-                <div 
-                  className="p-4 cursor-pointer hover:bg-slate-50/50 transition-colors"
+                <CardHeader 
+                  className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
                   onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                        <span className="text-primary font-bold text-lg">#{order.id}</span>
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">#{order.id}</span>
                       </div>
                       <div>
-                        <h4 className="font-bold text-lg text-foreground">{order.customer_info.name}</h4>
-                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <p className="font-semibold text-foreground">{order.customer_info.name}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {new Date(order.created_at).toLocaleString('vi-VN')}
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                      <span className={`px-3 py-1.5 rounded-full text-sm font-medium border flex items-center gap-1.5 ${statusConfig[order.status].className}`}>
-                        <StatusIcon className="h-4 w-4" />
-                        {statusConfig[order.status].label}
-                      </span>
-                      <p className="font-bold text-xl text-primary">{order.total.toLocaleString('vi-VN')}đ</p>
-                      {isExpanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                    <div className="flex items-center gap-3">
+                      <Badge variant={config.variant} className="gap-1">
+                        <config.icon className="h-3 w-3" />
+                        {config.label}
+                      </Badge>
+                      <p className="font-bold text-lg text-foreground hidden sm:block">
+                        {order.total.toLocaleString('vi-VN')}₫
+                      </p>
+                      {isExpanded ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
-                </div>
+                </CardHeader>
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                  <div className="border-t bg-slate-50/30 p-6 space-y-6 animate-in slide-in-from-top-2 duration-200">
+                  <CardContent className="border-t bg-muted/20 p-4 space-y-4">
                     {/* Customer Info */}
-                    <div className="bg-white rounded-xl p-4 shadow-sm">
-                      <h5 className="font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wide">Thông tin khách hàng</h5>
+                    <div className="bg-card rounded-lg p-4 border">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                        Thông tin khách hàng
+                      </p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary" />
+                          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">Họ tên</p>
-                            <p className="font-medium">{order.customer_info.name}</p>
+                            <p className="font-medium text-foreground">{order.customer_info.name}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                            <Phone className="h-5 w-5 text-emerald-600" />
+                          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <Phone className="h-4 w-4 text-emerald-600" />
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">Số điện thoại</p>
-                            <p className="font-medium">{order.customer_info.phone}</p>
+                            <p className="font-medium text-foreground">{order.customer_info.phone}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <Mail className="h-5 w-5 text-blue-600" />
+                          <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <Mail className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">Email</p>
-                            <p className="font-medium">{order.customer_info.email}</p>
+                            <p className="font-medium text-foreground">{order.customer_info.email}</p>
                           </div>
                         </div>
                       </div>
                       {order.customer_info.note && (
-                        <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                          <p className="text-sm"><span className="font-medium text-amber-700">Ghi chú:</span> {order.customer_info.note}</p>
+                        <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                          <p className="text-sm">
+                            <span className="font-medium text-amber-700">Ghi chú:</span> {order.customer_info.note}
+                          </p>
                         </div>
                       )}
                     </div>
 
                     {/* Items */}
-                    <div className="bg-white rounded-xl p-4 shadow-sm">
-                      <h5 className="font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wide">Sản phẩm đặt mua</h5>
+                    <div className="bg-card rounded-lg p-4 border">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                        Sản phẩm đặt mua
+                      </p>
                       <div className="space-y-2">
                         {order.items.map((item, idx) => (
                           <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                              <span className="w-6 h-6 rounded bg-muted flex items-center justify-center text-xs font-medium">
                                 {idx + 1}
-                              </div>
-                              <span className="font-medium">{item.code || item.name}</span>
+                              </span>
+                              <span className="font-medium text-foreground">{item.code || item.name}</span>
                             </div>
-                            <span className="font-semibold text-primary">{item.price.toLocaleString('vi-VN')}đ</span>
+                            <span className="font-semibold text-foreground">{item.price.toLocaleString('vi-VN')}₫</span>
                           </div>
                         ))}
                       </div>
-                      <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                        <span className="font-bold text-lg">TỔNG CỘNG</span>
-                        <span className="font-bold text-2xl text-primary">{order.total.toLocaleString('vi-VN')}đ</span>
+                      <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                        <span className="font-bold text-foreground">TỔNG CỘNG</span>
+                        <span className="font-bold text-xl text-primary">{order.total.toLocaleString('vi-VN')}₫</span>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-blue-200 text-blue-600 hover:bg-blue-50"
                         onClick={() => updateOrderStatus(order.id, 'processing')}
                         disabled={order.status === 'processing'}
+                        className="gap-1"
                       >
-                        <Loader2 className="h-4 w-4 mr-1.5" />
+                        <Loader2 className="h-3 w-3" />
                         Đang xử lý
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                         onClick={() => updateOrderStatus(order.id, 'completed')}
                         disabled={order.status === 'completed'}
+                        className="gap-1 text-emerald-600 hover:text-emerald-700"
                       >
-                        <CheckCircle className="h-4 w-4 mr-1.5" />
+                        <CheckCircle className="h-3 w-3" />
                         Hoàn thành
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-red-200 text-red-600 hover:bg-red-50"
                         onClick={() => updateOrderStatus(order.id, 'cancelled')}
                         disabled={order.status === 'cancelled'}
+                        className="gap-1 text-destructive hover:text-destructive"
                       >
-                        <XCircle className="h-4 w-4 mr-1.5" />
+                        <XCircle className="h-3 w-3" />
                         Hủy đơn
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => deleteOrder(order.id)}
-                        className="ml-auto"
+                        className="ml-auto gap-1"
                       >
-                        <Trash2 className="h-4 w-4 mr-1.5" />
-                        Xóa đơn
+                        <Trash2 className="h-3 w-3" />
+                        Xóa
                       </Button>
                     </div>
-                  </div>
+                  </CardContent>
                 )}
               </Card>
             );

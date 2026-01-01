@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, Plus, Edit, X, Ticket, Percent, DollarSign, Calendar, Hash, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Plus, Edit, X, Ticket, Percent, DollarSign, Calendar, Hash, ShoppingCart, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,6 +28,7 @@ const CouponsTab = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const [formData, setFormData] = useState({
     code: '',
@@ -167,6 +169,10 @@ const CouponsTab = () => {
     }
   };
 
+  const filteredCoupons = coupons.filter(coupon =>
+    coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -181,201 +187,220 @@ const CouponsTab = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Quản lý mã giảm giá</h2>
-          <p className="text-muted-foreground">Tổng: {coupons.length} mã</p>
-        </div>
-        <Button 
-          onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-primary hover:opacity-90"
-        >
-          {showForm ? <X className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-          {showForm ? 'Đóng' : 'Tạo mã mới'}
-        </Button>
-      </div>
+      <Card className="border bg-card">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Ticket className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Mã giảm giá</h2>
+                <p className="text-sm text-muted-foreground">{coupons.length} mã giảm giá</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Tìm mã..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
+              <Button 
+                onClick={() => setShowForm(!showForm)}
+                className="gap-2"
+              >
+                {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                {showForm ? 'Đóng' : 'Tạo mã'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Create/Edit Form */}
       {showForm && (
-        <Card className="p-6 border-0 shadow-lg bg-gradient-to-br from-white to-slate-50">
-          <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-primary" />
-            {editingId ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá mới'}
-          </h4>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Mã giảm giá *</Label>
-                <Input
-                  required
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  placeholder="VD: SUMMER2024"
-                  className="font-mono uppercase"
+        <Card className="border bg-card">
+          <CardHeader className="border-b bg-muted/30">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Ticket className="h-4 w-4 text-primary" />
+              {editingId ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá mới'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm">Mã giảm giá *</Label>
+                  <Input
+                    required
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="VD: SUMMER2024"
+                    className="font-mono uppercase"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Loại giảm giá *</Label>
+                  <Select 
+                    value={formData.discount_type} 
+                    onValueChange={(value: 'percentage' | 'fixed') => setFormData({ ...formData, discount_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">
+                        <div className="flex items-center gap-2">
+                          <Percent className="h-4 w-4" />
+                          Phần trăm (%)
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="fixed">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Số tiền (đ)
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Giá trị giảm *</Label>
+                  <Input
+                    type="number"
+                    required
+                    min="0"
+                    value={formData.discount_value}
+                    onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                    placeholder={formData.discount_type === 'percentage' ? '10' : '50000'}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Đơn tối thiểu</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.min_order_value}
+                    onChange={(e) => setFormData({ ...formData, min_order_value: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Số lần sử dụng tối đa</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.max_uses}
+                    onChange={(e) => setFormData({ ...formData, max_uses: e.target.value })}
+                    placeholder="Không giới hạn"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Ngày hết hạn</Label>
+                  <Input
+                    type="date"
+                    value={formData.expires_at}
+                    onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <Switch
+                  checked={formData.active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
                 />
+                <Label className="cursor-pointer text-sm">Kích hoạt ngay</Label>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Loại giảm giá *</Label>
-                <Select 
-                  value={formData.discount_type} 
-                  onValueChange={(value: 'percentage' | 'fixed') => setFormData({ ...formData, discount_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">
-                      <div className="flex items-center gap-2">
-                        <Percent className="h-4 w-4" />
-                        Phần trăm (%)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="fixed">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        Số tiền cố định (đ)
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2 pt-2">
+                <Button type="submit">
+                  {editingId ? 'Cập nhật' : 'Tạo mã'}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Hủy
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Giá trị giảm *</Label>
-                <Input
-                  type="number"
-                  required
-                  min="0"
-                  step="0.01"
-                  value={formData.discount_value}
-                  onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
-                  placeholder={formData.discount_type === 'percentage' ? '10' : '50000'}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Giá trị đơn tối thiểu</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={formData.min_order_value}
-                  onChange={(e) => setFormData({ ...formData, min_order_value: e.target.value })}
-                  placeholder="0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Số lần sử dụng tối đa</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={formData.max_uses}
-                  onChange={(e) => setFormData({ ...formData, max_uses: e.target.value })}
-                  placeholder="Không giới hạn"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Ngày hết hạn</Label>
-                <Input
-                  type="date"
-                  value={formData.expires_at}
-                  onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
-              <Switch
-                checked={formData.active}
-                onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
-              />
-              <Label className="cursor-pointer">Kích hoạt mã ngay</Label>
-            </div>
-
-            <div className="flex gap-3">
-              <Button type="submit" className="bg-gradient-primary hover:opacity-90">
-                {editingId ? 'Cập nhật' : 'Tạo mã'}
-              </Button>
-              <Button type="button" variant="outline" onClick={resetForm}>Hủy</Button>
-            </div>
-          </form>
+            </form>
+          </CardContent>
         </Card>
       )}
 
-      {/* Coupons Grid */}
-      {coupons.length === 0 && !showForm ? (
-        <Card className="p-12 text-center border-0 shadow-lg">
-          <Ticket className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground text-lg">Chưa có mã giảm giá nào</p>
+      {/* Coupons List */}
+      {filteredCoupons.length === 0 && !showForm ? (
+        <Card className="border bg-card">
+          <CardContent className="p-12 text-center">
+            <Ticket className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+            <p className="text-muted-foreground text-lg">
+              {searchQuery ? "Không tìm thấy mã phù hợp" : "Chưa có mã giảm giá nào"}
+            </p>
+          </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {coupons.map((coupon) => (
+          {filteredCoupons.map((coupon) => (
             <Card 
               key={coupon.id} 
-              className={`overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${!coupon.active && 'opacity-60'}`}
+              className={`border bg-card overflow-hidden ${!coupon.active && 'opacity-60'}`}
             >
-              <div className={`h-2 ${coupon.active ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-slate-300'}`} />
-              
-              <div className="p-5">
-                {/* Code Header */}
-                <div className="flex items-start justify-between mb-4">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-3 py-1 bg-primary/10 text-primary font-bold font-mono rounded-lg text-lg">
-                        {coupon.code}
-                      </span>
-                    </div>
-                    <p className="text-lg font-bold text-foreground">
+                    <Badge variant="outline" className="font-mono text-sm mb-2">
+                      {coupon.code}
+                    </Badge>
+                    <p className="font-semibold text-foreground">
                       {coupon.discount_type === 'percentage' 
                         ? `Giảm ${coupon.discount_value}%` 
-                        : `Giảm ${coupon.discount_value.toLocaleString('vi-VN')}đ`}
+                        : `Giảm ${coupon.discount_value.toLocaleString('vi-VN')}₫`}
                     </p>
                   </div>
                   <div className="flex gap-1">
                     <Button size="icon" variant="ghost" onClick={() => handleEdit(coupon)} className="h-8 w-8">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => handleDelete(coupon.id, coupon.code)} className="h-8 w-8 text-red-500 hover:text-red-600">
+                    <Button size="icon" variant="ghost" onClick={() => handleDelete(coupon.id, coupon.code)} className="h-8 w-8 text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
-                {/* Details */}
-                <div className="space-y-2 mb-4 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ShoppingCart className="h-4 w-4" />
-                    <span>Đơn tối thiểu: {coupon.min_order_value.toLocaleString('vi-VN')}đ</span>
+                <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                    <span>Đơn tối thiểu: {coupon.min_order_value.toLocaleString('vi-VN')}₫</span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Hash className="h-4 w-4" />
-                    <span>Đã dùng: {coupon.used_count}{coupon.max_uses ? ` / ${coupon.max_uses}` : ' (không giới hạn)'}</span>
+                  <div className="flex items-center gap-2">
+                    <Hash className="h-3.5 w-3.5" />
+                    <span>Đã dùng: {coupon.used_count}{coupon.max_uses ? ` / ${coupon.max_uses}` : ''}</span>
                   </div>
                   {coupon.expires_at && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5" />
                       <span>Hết hạn: {new Date(coupon.expires_at).toLocaleDateString('vi-VN')}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Toggle */}
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    coupon.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {coupon.active ? '✓ Đang hoạt động' : '✕ Đã tắt'}
-                  </span>
+                <div className="flex items-center justify-between pt-3 border-t">
+                  <Badge variant={coupon.active ? "default" : "secondary"}>
+                    {coupon.active ? 'Đang hoạt động' : 'Đã tắt'}
+                  </Badge>
                   <Switch
                     checked={coupon.active}
                     onCheckedChange={() => toggleActive(coupon.id, coupon.active)}
                   />
                 </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
         </div>
