@@ -1,11 +1,19 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Download, Users, Mail, Phone, ShoppingBag, DollarSign, Calendar, Search } from "lucide-react";
+import { Trash2, Download, Users, Mail, Phone, ShoppingBag, DollarSign, Calendar, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { AdminUser } from "@/hooks/useAdminData";
 import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface UsersTabProps {
   users: AdminUser[];
@@ -13,8 +21,13 @@ interface UsersTabProps {
   onRefresh: () => void;
 }
 
+type SortField = 'name' | 'order_count' | 'total_spent' | 'created_at';
+type SortDirection = 'asc' | 'desc';
+
 const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const deleteUser = async (userId: string, userName: string) => {
     if (!confirm(`⚠️ Bạn có chắc chắn muốn xóa người dùng "${userName}"? Tất cả đơn hàng của họ cũng sẽ bị xóa!`)) {
@@ -70,11 +83,55 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
     toast.success("Xuất CSV thành công!");
   };
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (user.phone && user.phone.includes(searchQuery))
-  );
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="h-4 w-4 inline ml-1" /> : 
+      <ChevronDown className="h-4 w-4 inline ml-1" />;
+  };
+
+  const filteredAndSortedUsers = users
+    .filter(user => 
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (user.phone && user.phone.includes(searchQuery))
+    )
+    .sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'order_count':
+          comparison = a.order_count - b.order_count;
+          break;
+        case 'total_spent':
+          comparison = a.total_spent - b.total_spent;
+          break;
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}M₫`;
+    } else if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(0)}K₫`;
+    }
+    return `${amount}₫`;
+  };
 
   if (isLoading) {
     return (
@@ -90,105 +147,148 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Quản lý người dùng</h2>
-          <p className="text-muted-foreground">Tổng: {users.length} người dùng</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-4 rounded-xl border shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 rounded-xl">
+            <Users className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">Quản lý người dùng</h2>
+            <p className="text-sm text-muted-foreground">Tổng cộng {users.length} người dùng</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 md:w-64">
+          <div className="relative flex-1 md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm theo tên, email, SĐT..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-background"
             />
           </div>
-          <Button onClick={exportCSV} variant="outline" className="shrink-0">
-            <Download className="h-4 w-4 mr-2" />
-            Xuất CSV
+          <Button onClick={exportCSV} variant="outline" className="shrink-0 gap-2">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Xuất CSV</span>
           </Button>
         </div>
       </div>
 
-      {/* Users Grid */}
-      {filteredUsers.length === 0 ? (
-        <Card className="p-12 text-center border-0 shadow-lg">
+      {/* Users Table */}
+      {filteredAndSortedUsers.length === 0 ? (
+        <div className="bg-card rounded-xl border p-12 text-center">
           <Users className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-muted-foreground text-lg">
             {searchQuery ? 'Không tìm thấy người dùng phù hợp' : 'Chưa có người dùng nào'}
           </p>
-        </Card>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredUsers.map((user) => (
-            <Card 
-              key={user.id} 
-              className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group"
-            >
-              <div className="h-2 bg-gradient-to-r from-primary to-secondary" />
-              
-              <div className="p-5">
-                {/* User Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary font-bold text-lg">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground">{user.name}</h4>
-                      <p className="text-xs text-muted-foreground font-mono">{user.id.slice(0, 8)}...</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteUser(user.id, user.name)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-600 hover:bg-red-50"
+        <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="w-[80px] font-semibold">Avatar</TableHead>
+                  <TableHead 
+                    className="font-semibold cursor-pointer hover:text-primary transition-colors min-w-[150px]"
+                    onClick={() => handleSort('name')}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground truncate">{user.email || 'Chưa có email'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{user.phone || 'Chưa có SĐT'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      Đăng ký: {new Date(user.created_at).toLocaleDateString('vi-VN')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="flex gap-3 pt-4 border-t">
-                  <div className="flex-1 bg-blue-50 rounded-lg p-3 text-center">
-                    <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
-                      <ShoppingBag className="h-4 w-4" />
-                    </div>
-                    <p className="text-xl font-bold text-blue-700">{user.order_count}</p>
-                    <p className="text-xs text-blue-600">Đơn hàng</p>
-                  </div>
-                  <div className="flex-1 bg-emerald-50 rounded-lg p-3 text-center">
-                    <div className="flex items-center justify-center gap-1 text-emerald-600 mb-1">
-                      <DollarSign className="h-4 w-4" />
-                    </div>
-                    <p className="text-lg font-bold text-emerald-700">{user.total_spent >= 1000000 ? `${(user.total_spent / 1000000).toFixed(1)}M` : `${(user.total_spent / 1000).toFixed(0)}K`}</p>
-                    <p className="text-xs text-emerald-600">Chi tiêu</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
+                    Người dùng <SortIcon field="name" />
+                  </TableHead>
+                  <TableHead className="font-semibold min-w-[200px]">Liên hệ</TableHead>
+                  <TableHead 
+                    className="font-semibold cursor-pointer hover:text-primary transition-colors text-center"
+                    onClick={() => handleSort('order_count')}
+                  >
+                    Đơn hàng <SortIcon field="order_count" />
+                  </TableHead>
+                  <TableHead 
+                    className="font-semibold cursor-pointer hover:text-primary transition-colors text-right"
+                    onClick={() => handleSort('total_spent')}
+                  >
+                    Chi tiêu <SortIcon field="total_spent" />
+                  </TableHead>
+                  <TableHead 
+                    className="font-semibold cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => handleSort('created_at')}
+                  >
+                    Ngày đăng ký <SortIcon field="created_at" />
+                  </TableHead>
+                  <TableHead className="w-[80px] text-center font-semibold">Thao tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAndSortedUsers.map((user) => (
+                  <TableRow key={user.id} className="group hover:bg-muted/30">
+                    <TableCell>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center text-primary font-bold text-sm border-2 border-primary/20">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-semibold text-foreground">{user.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                          ID: {user.id.slice(0, 8)}...
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-foreground truncate max-w-[180px]">
+                            {user.email || <span className="text-muted-foreground italic">Chưa có</span>}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-foreground">
+                            {user.phone || <span className="text-muted-foreground italic">Chưa có</span>}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge 
+                        variant={user.order_count > 0 ? "default" : "secondary"}
+                        className="font-semibold"
+                      >
+                        <ShoppingBag className="h-3 w-3 mr-1" />
+                        {user.order_count}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className={`font-semibold ${user.total_spent > 0 ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                        {formatCurrency(user.total_spent)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        {new Date(user.created_at).toLocaleDateString('vi-VN')}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteUser(user.id, user.name)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Table Footer */}
+          <div className="px-4 py-3 border-t bg-muted/30 text-sm text-muted-foreground">
+            Hiển thị {filteredAndSortedUsers.length} / {users.length} người dùng
+          </div>
         </div>
       )}
     </div>
