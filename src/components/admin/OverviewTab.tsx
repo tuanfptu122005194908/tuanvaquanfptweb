@@ -45,11 +45,25 @@ const OverviewTab = ({ stats, orders, isLoading }: OverviewTabProps) => {
 
   const recentOrders = orders.slice(0, 5);
 
-  const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    pending: { label: 'Chờ xử lý', variant: 'secondary' },
-    processing: { label: 'Đang xử lý', variant: 'default' },
-    completed: { label: 'Hoàn thành', variant: 'outline' },
-    cancelled: { label: 'Đã hủy', variant: 'destructive' },
+  const statusConfig: Record<string, { label: string; className: string }> = {
+    pending: { label: 'Chờ xử lý', className: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400' },
+    processing: { label: 'Đang xử lý', className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400' },
+    completed: { label: 'Hoàn thành', className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400' },
+    cancelled: { label: 'Đã hủy', className: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400' },
+  };
+
+  const avatarColors = [
+    'from-pink-400 to-rose-500',
+    'from-violet-400 to-purple-500',
+    'from-blue-400 to-indigo-500',
+    'from-cyan-400 to-teal-500',
+    'from-emerald-400 to-green-500',
+    'from-amber-400 to-orange-500',
+  ];
+
+  const getAvatarColor = (name: string) => {
+    const index = name.charCodeAt(0) % avatarColors.length;
+    return avatarColors[index];
   };
 
   if (isLoading) {
@@ -152,31 +166,40 @@ const OverviewTab = ({ stats, orders, isLoading }: OverviewTabProps) => {
             </div>
           ) : (
             <div className="divide-y">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                      #{order.id}
+              {recentOrders.map((order) => {
+                const avatarColor = getAvatarColor(order.customer_info.name);
+                const initial = order.customer_info.name.charAt(0).toUpperCase();
+                const config = statusConfig[order.status];
+                
+                return (
+                  <div key={order.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${avatarColor} flex items-center justify-center shadow-sm`}>
+                        <span className="text-white font-bold text-sm">{initial}</span>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground">{order.customer_info.name}</p>
+                          <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">#{order.id}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{order.customer_info.phone}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{order.customer_info.name}</p>
-                      <p className="text-xs text-muted-foreground">{order.customer_info.phone}</p>
+                    
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={`text-xs border ${config?.className || ''}`}>
+                        {config?.label || order.status}
+                      </Badge>
+                      <div className="text-right">
+                        <p className="font-semibold text-foreground">{order.total.toLocaleString('vi-VN')}₫</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(order.created_at).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Badge variant={statusConfig[order.status]?.variant || 'secondary'}>
-                      {statusConfig[order.status]?.label || order.status}
-                    </Badge>
-                    <div className="text-right">
-                      <p className="font-semibold text-foreground">{order.total.toLocaleString('vi-VN')}₫</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(order.created_at).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
