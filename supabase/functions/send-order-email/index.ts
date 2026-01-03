@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
-const GMAIL_USER = "lequan12305@gmail.com";
-const GMAIL_APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const ADMIN_EMAIL = "lequan12305@gmail.com";
 
 const corsHeaders = {
@@ -43,27 +42,6 @@ const getItemsHtml = (items: OrderItem[]) => {
   `).join('');
 };
 
-async function sendEmail(to: string, subject: string, html: string) {
-  const client = new SmtpClient();
-  
-  await client.connectTLS({
-    hostname: "smtp.gmail.com",
-    port: 465,
-    username: GMAIL_USER,
-    password: GMAIL_APP_PASSWORD!,
-  });
-
-  await client.send({
-    from: GMAIL_USER,
-    to: to,
-    subject: subject,
-    content: "Vui lòng xem email này với HTML enabled.",
-    html: html,
-  });
-
-  await client.close();
-}
-
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -72,10 +50,6 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: OrderEmailRequest = await req.json();
     console.log('Sending order emails for order:', data.orderId);
-
-    if (!GMAIL_APP_PASSWORD) {
-      throw new Error("GMAIL_APP_PASSWORD is not configured");
-    }
 
     const orderDate = new Date().toLocaleString('vi-VN', { 
       timeZone: 'Asia/Ho_Chi_Minh',
@@ -230,26 +204,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to customer
     console.log('Sending confirmation email to customer:', data.customerEmail);
-    await sendEmail(
-      data.customerEmail,
-      `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
-      customerEmailHtml
-    );
-    console.log('Customer email sent successfully');
+    const customerEmailResult = await resend.emails.send({
+      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      to: [data.customerEmail],
+      subject: `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
+      html: customerEmailHtml,
+    });
+    console.log('Customer email sent:', customerEmailResult);
 
     // Send notification to admin
     console.log('Sending notification email to admin:', ADMIN_EMAIL);
-    await sendEmail(
-      ADMIN_EMAIL,
-      `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
-      adminEmailHtml
-    );
-    console.log('Admin email sent successfully');
+    const adminEmailResult = await resend.emails.send({
+      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      to: [ADMIN_EMAIL],
+      subject: `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
+      html: adminEmailHtml,
+    });
+    console.log('Admin email sent:', adminEmailResult);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Emails sent successfully"
+        customerEmail: customerEmailResult,
+        adminEmail: adminEmailResult 
       }),
       {
         status: 200,
