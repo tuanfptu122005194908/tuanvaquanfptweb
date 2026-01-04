@@ -77,12 +77,38 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
 
   const updateOrderStatus = async (orderId: number, newStatus: Order['status']) => {
     try {
+      // Find the order to get customer info
+      const order = orders.find(o => o.id === orderId);
+      if (!order) throw new Error('Order not found');
+
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
 
       if (error) throw error;
+      
+      // Send status update email to customer
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-status-email', {
+          body: {
+            orderId: order.id,
+            customerName: order.customer_info.name,
+            customerEmail: order.customer_info.email,
+            newStatus,
+            items: order.items,
+            total: order.total
+          }
+        });
+        
+        if (emailError) {
+          console.error('Failed to send status email:', emailError);
+        } else {
+          console.log('Status update email sent successfully');
+        }
+      } catch (emailErr) {
+        console.error('Error sending status email:', emailErr);
+      }
       
       toast.success("Cập nhật trạng thái thành công!");
       onRefresh();
