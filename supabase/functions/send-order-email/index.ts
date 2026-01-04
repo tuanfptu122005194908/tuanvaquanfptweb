@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "TUAN VA QUAN <onboarding@resend.dev>";
 const ADMIN_EMAIL = "lequan12305@gmail.com";
 
 const corsHeaders = {
@@ -202,34 +203,38 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    console.log('Resend FROM:', RESEND_FROM);
+
     // Send email to customer
     console.log('Sending confirmation email to customer:', data.customerEmail);
     const customerEmailResult = await resend.emails.send({
-      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      from: RESEND_FROM,
       to: [data.customerEmail],
       subject: `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
       html: customerEmailHtml,
     });
-    console.log('Customer email sent:', customerEmailResult);
+    console.log('Customer email result:', customerEmailResult);
 
     // Send notification to admin
     console.log('Sending notification email to admin:', ADMIN_EMAIL);
     const adminEmailResult = await resend.emails.send({
-      from: "TUAN VA QUAN <onboarding@resend.dev>",
+      from: RESEND_FROM,
       to: [ADMIN_EMAIL],
       subject: `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
       html: adminEmailHtml,
     });
-    console.log('Admin email sent:', adminEmailResult);
+    console.log('Admin email result:', adminEmailResult);
+
+    const success = !customerEmailResult?.error && !adminEmailResult?.error;
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success,
         customerEmail: customerEmailResult,
-        adminEmail: adminEmailResult 
+        adminEmail: adminEmailResult,
       }),
       {
-        status: 200,
+        status: success ? 200 : 502,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );

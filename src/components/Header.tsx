@@ -18,7 +18,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
 
   const menuItems = [
     { label: "Khóa học", href: "#courses" },
-    { label: "Tiếng Anh", href: "#english" },
+    { label: "Dịch vụ", href: "#english" },
     { label: "Tài liệu", href: "#documents" },
     { label: "Coursera", href: "#coursera" },
     { label: "Liên hệ", href: "#contact" },
