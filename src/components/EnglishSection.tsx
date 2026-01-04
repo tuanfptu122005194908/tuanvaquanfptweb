@@ -27,7 +27,7 @@ const EnglishSection = ({ onAddToCart }: EnglishSectionProps) => {
       <section id="english" className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Dịch vụ Tiếng Anh
+            Dịch vụ
           </h2>
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -45,7 +45,7 @@ const EnglishSection = ({ onAddToCart }: EnglishSectionProps) => {
     <section id="english" className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
-          Dịch vụ Tiếng Anh
+          Dịch vụ
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
           Hỗ trợ toàn diện cho các môn Tiếng Anh tại FPT
