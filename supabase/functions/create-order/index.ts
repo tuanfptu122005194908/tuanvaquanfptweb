@@ -204,15 +204,15 @@ serve(async (req) => {
     // Send order confirmation emails (non-blocking)
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-      
+
       console.log('Sending order confirmation emails...');
-      
+
       fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`,
+          // IMPORTANT: send-order-email expects a real JWT when verify_jwt is enabled
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           orderId: order.id,
@@ -225,10 +225,13 @@ serve(async (req) => {
           couponCode: couponCode || null,
           note: customerInfo.note || '',
         }),
-      }).then(res => res.json())
-        .then(data => console.log('Email sent result:', data))
-        .catch(err => console.error('Email send error:', err));
-        
+      })
+        .then(async (res) => {
+          const body = await res.text();
+          console.log('send-order-email status:', res.status);
+          console.log('send-order-email body:', body);
+        })
+        .catch((err) => console.error('Email send error:', err));
     } catch (emailError) {
       console.error('Failed to trigger email:', emailError);
       // Don't fail the order if email fails
