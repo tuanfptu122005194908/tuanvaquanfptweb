@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Sparkles, Video, BookOpen } from "lucide-react";
 import type { CartItem } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
@@ -24,13 +23,15 @@ const EnglishSection = ({ onAddToCart }: EnglishSectionProps) => {
 
   if (isLoading) {
     return (
-      <section id="english" className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Dịch vụ
-          </h2>
+      <section id="english" className="section-padding bg-muted/30 relative overflow-hidden">
+        <div className="container-tight">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-display gradient-text-accent mb-4">
+              Dịch vụ tiếng Anh
+            </h2>
+          </div>
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="w-12 h-12 rounded-full border-4 border-accent/30 border-t-accent animate-spin" />
           </div>
         </div>
       </section>
@@ -41,68 +42,108 @@ const EnglishSection = ({ onAddToCart }: EnglishSectionProps) => {
     return null;
   }
 
+  const getIcon = (code: string) => {
+    return code === 'LUK' ? Video : BookOpen;
+  };
+
   return (
-    <section id="english" className="py-16 bg-gradient-to-br from-purple-50 to-blue-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-primary bg-clip-text text-transparent">
-          Dịch vụ
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Hỗ trợ toàn diện cho các môn Tiếng Anh tại FPT
-        </p>
+    <section id="english" className="section-padding bg-muted/30 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
 
+      <div className="container-tight relative z-10">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-accent/20 mb-6">
+            <Sparkles className="h-4 w-4 text-accent" />
+            <span className="text-sm font-medium text-muted-foreground">Hỗ trợ tiếng Anh</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold font-display gradient-text-accent mb-4">
+            Dịch vụ tiếng Anh
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Hỗ trợ toàn diện cho các môn Tiếng Anh tại FPT University
+          </p>
+        </div>
+
+        {/* Service Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {services.map((service) => (
-            <Card 
-              key={service.id}
-              className="min-h-[38rem] flex flex-col overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
-            >
-              {/* Image Background - 50% */}
+          {services.map((service, index) => {
+            const ServiceIcon = getIcon(service.code);
+            
+            return (
               <div 
-                className="h-1/2 bg-cover bg-center relative bg-muted"
-                style={service.image_url ? { backgroundImage: `url(${service.image_url})` } : undefined}
+                key={service.id}
+                className="group relative glass rounded-3xl overflow-hidden hover-lift animate-slide-up opacity-0"
+                style={{ animationDelay: `${index * 0.15}s` }}
               >
-                {!service.image_url && (
-                  <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                    🎬
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
-              </div>
-
-              {/* Content - 50% */}
-              <div className="h-1/2 p-6 flex flex-col">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-4xl">{service.code === 'LUK' ? '🎬' : '📖'}</span>
-                  <h3 className="text-2xl font-bold text-primary">{service.name}</h3>
-                </div>
-
-                <div className="space-y-2 mb-6 flex-grow">
-                  {service.services?.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 text-success" />
-                      <span className="text-sm font-medium">{item}</span>
+                {/* Image Header */}
+                <div className="relative h-56 overflow-hidden">
+                  {service.image_url ? (
+                    <img 
+                      src={service.image_url} 
+                      alt={service.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-card flex items-center justify-center">
+                      <ServiceIcon className="h-20 w-20 text-muted-foreground/30" />
                     </div>
-                  ))}
-                  {service.description && !service.services?.length && (
-                    <p className="text-sm text-muted-foreground">{service.description}</p>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+                  
+                  {/* Floating badge */}
+                  <div className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-accent text-primary-foreground text-sm font-bold shadow-elegant">
+                    {service.code === 'LUK' ? '🎬 Project' : '📖 Learning'}
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t">
-                  <span className="text-2xl font-bold text-primary">
-                    {service.price.toLocaleString('vi-VN')}đ
-                  </span>
-                  <Button 
-                    className="bg-gradient-accent"
-                    onClick={() => handleAddToCart(service)}
-                  >
-                    Đăng ký
-                  </Button>
+                {/* Content */}
+                <div className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-xl bg-accent/10">
+                      <ServiceIcon className="h-6 w-6 text-accent" />
+                    </div>
+                    <h3 className="text-2xl font-bold font-display text-foreground">{service.name}</h3>
+                  </div>
+
+                  {/* Features */}
+                  <div className="space-y-3 mb-8">
+                    {service.services?.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 group/item">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
+                          <Check className="h-3 w-3 text-success" />
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground group-hover/item:text-foreground transition-colors">
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+                    {service.description && !service.services?.length && (
+                      <p className="text-muted-foreground">{service.description}</p>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-6 border-t border-border/50">
+                    <div>
+                      <span className="text-3xl font-bold font-display gradient-text-accent">
+                        {service.price.toLocaleString('vi-VN')}
+                      </span>
+                      <span className="text-muted-foreground ml-1">đ</span>
+                    </div>
+                    <Button 
+                      className="bg-gradient-accent hover:opacity-90 text-primary-foreground px-6 shadow-elegant"
+                      onClick={() => handleAddToCart(service)}
+                    >
+                      Đăng ký ngay
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

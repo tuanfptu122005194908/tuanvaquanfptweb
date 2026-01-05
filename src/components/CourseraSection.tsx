@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Award, Minus, Plus } from "lucide-react";
+import { Award, Minus, Plus, ShoppingCart, Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { CartItem } from "@/hooks/useOrders";
 import { toast } from "sonner";
@@ -37,47 +36,61 @@ const CourseraSection = ({ onAddToCart }: CourseraSectionProps) => {
   };
 
   return (
-    <section id="coursera" className="py-16 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden">
-      {/* Decorative circles */}
-      <div className="absolute top-20 right-20 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 left-20 w-64 h-64 bg-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <section id="coursera" className="section-padding bg-muted/30 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px] animate-pulse-glow" />
+      <div className="absolute bottom-20 left-20 w-64 h-64 bg-accent/10 rounded-full blur-[80px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container-tight relative z-10">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <Award className="h-16 w-16 mx-auto mb-4 text-primary" />
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-primary/20 mb-6">
+              <Award className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">Dịch vụ Coursera</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold font-display gradient-text mb-4">
               Hỗ trợ Rush Coursera
             </h2>
-            <p className="text-muted-foreground">
-              Dịch vụ hỗ trợ hoàn thành MOOC nhanh chóng - 30,000đ/MOOC
+            <p className="text-muted-foreground text-lg">
+              Dịch vụ hỗ trợ hoàn thành MOOC nhanh chóng và hiệu quả
             </p>
           </div>
 
-          <Card className="p-8 shadow-elegant">
+          {/* Form Card */}
+          <div className="card-premium p-8">
             <div className="space-y-6">
+              {/* Price Badge */}
+              <div className="flex justify-center mb-2">
+                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-primary-foreground">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="font-bold">30,000đ / MOOC</span>
+                </div>
+              </div>
+
               {/* Course Name Input */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Tên khóa học / MOOC:
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Tên khóa học / MOOC
                 </label>
                 <Input
                   placeholder="Nhập tên khóa học Coursera..."
                   value={courseName}
                   onChange={(e) => setCourseName(e.target.value)}
-                  className="focus:ring-2 focus:ring-primary"
+                  className="bg-muted/50 border-border/50 focus:border-primary focus:ring-primary/20 h-12"
                 />
               </div>
 
               {/* MOOC Count */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Số lượng MOOC:
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Số lượng MOOC
                 </label>
                 <div className="flex items-center gap-4">
                   <Button
                     variant="outline"
                     size="icon"
+                    className="h-12 w-12 border-border/50 hover:bg-muted/50 hover:border-primary"
                     onClick={() => setMoocCount(Math.max(1, moocCount - 1))}
                   >
                     <Minus className="h-4 w-4" />
@@ -87,11 +100,12 @@ const CourseraSection = ({ onAddToCart }: CourseraSectionProps) => {
                     min="1"
                     value={moocCount}
                     onChange={(e) => setMoocCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-24 text-center"
+                    className="w-24 text-center bg-muted/50 border-border/50 h-12 text-lg font-bold"
                   />
                   <Button
                     variant="outline"
                     size="icon"
+                    className="h-12 w-12 border-border/50 hover:bg-muted/50 hover:border-primary"
                     onClick={() => setMoocCount(moocCount + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -100,29 +114,31 @@ const CourseraSection = ({ onAddToCart }: CourseraSectionProps) => {
               </div>
 
               {/* Price Calculation */}
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">💰 Công thức:</span>
-                  <span className="font-mono">
+              <div className="p-6 rounded-2xl bg-muted/50 border border-border/50">
+                <div className="flex items-center justify-between text-sm mb-3">
+                  <span className="text-muted-foreground">Công thức tính:</span>
+                  <span className="font-mono text-foreground">
                     {moocCount} × {pricePerMooc.toLocaleString('vi-VN')}đ
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xl font-bold">
-                  <span>Tổng cộng:</span>
-                  <span className="text-primary">{totalPrice.toLocaleString('vi-VN')}đ</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-medium text-foreground">Tổng cộng:</span>
+                  <span className="text-3xl font-bold font-display gradient-text">
+                    {totalPrice.toLocaleString('vi-VN')}đ
+                  </span>
                 </div>
               </div>
 
               {/* Add to Cart Button */}
               <Button
-                className="w-full bg-gradient-accent hover:shadow-lg"
-                size="lg"
+                className="w-full h-14 bg-gradient-primary hover:opacity-90 text-primary-foreground text-lg font-semibold shadow-elegant"
                 onClick={handleAddToCart}
               >
-                ➕ Thêm vào giỏ hàng
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Thêm vào giỏ hàng
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </section>
