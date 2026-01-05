@@ -203,37 +203,32 @@ serve(async (req) => {
 
     // Send order confirmation emails (non-blocking)
     try {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      console.log('Triggering send-order-email function...');
 
-      console.log('Sending order confirmation emails...');
+      const emailPayload = {
+        orderId: order.id,
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        customerPhone: customerInfo.phone,
+        items,
+        total: finalTotal,
+        discountAmount,
+        couponCode: couponCode || null,
+        note: customerInfo.note || '',
+      };
 
-      fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // IMPORTANT: send-order-email expects a real JWT when verify_jwt is enabled
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          orderId: order.id,
-          customerName: customerInfo.name,
-          customerEmail: customerInfo.email,
-          customerPhone: customerInfo.phone,
-          items: items,
-          total: finalTotal,
-          discountAmount: discountAmount,
-          couponCode: couponCode || null,
-          note: customerInfo.note || '',
-        }),
-      })
-        .then(async (res) => {
-          const body = await res.text();
-          console.log('send-order-email status:', res.status);
-          console.log('send-order-email body:', body);
+      supabaseAdmin.functions
+        .invoke('send-order-email', { body: emailPayload })
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('send-order-email invoke error:', error);
+            return;
+          }
+          console.log('send-order-email result:', data);
         })
-        .catch((err) => console.error('Email send error:', err));
+        .catch((err) => console.error('send-order-email invoke failed:', err));
     } catch (emailError) {
-      console.error('Failed to trigger email:', emailError);
+      console.error('Failed to trigger send-order-email:', emailError);
       // Don't fail the order if email fails
     }
 
