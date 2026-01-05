@@ -205,36 +205,51 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Resend FROM:', RESEND_FROM);
 
-    // Send email to customer
-    console.log('Sending confirmation email to customer:', data.customerEmail);
-    const customerEmailResult = await resend.emails.send({
-      from: RESEND_FROM,
-      to: [data.customerEmail],
-      subject: `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
-      html: customerEmailHtml,
-    });
-    console.log('Customer email result:', customerEmailResult);
+    let customerEmailResult: any = null;
+    let adminEmailResult: any = null;
 
-    // Send notification to admin
-    console.log('Sending notification email to admin:', ADMIN_EMAIL);
-    const adminEmailResult = await resend.emails.send({
-      from: RESEND_FROM,
-      to: [ADMIN_EMAIL],
-      subject: `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
-      html: adminEmailHtml,
-    });
-    console.log('Admin email result:', adminEmailResult);
+    // Send email to customer (may fail if domain not verified)
+    try {
+      console.log('Sending confirmation email to customer:', data.customerEmail);
+      customerEmailResult = await resend.emails.send({
+        from: RESEND_FROM,
+        to: [data.customerEmail],
+        subject: `✅ Đặt hàng thành công - Đơn #${data.orderId}`,
+        html: customerEmailHtml,
+      });
+      console.log('Customer email result:', customerEmailResult);
+    } catch (err: any) {
+      console.error('Customer email failed:', err.message);
+      customerEmailResult = { error: err.message };
+    }
 
-    const success = !customerEmailResult?.error && !adminEmailResult?.error;
+    // Send notification to admin (should always work for verified email)
+    try {
+      console.log('Sending notification email to admin:', ADMIN_EMAIL);
+      adminEmailResult = await resend.emails.send({
+        from: RESEND_FROM,
+        to: [ADMIN_EMAIL],
+        subject: `🔔 Đơn hàng mới #${data.orderId} - ${data.customerName}`,
+        html: adminEmailHtml,
+      });
+      console.log('Admin email result:', adminEmailResult);
+    } catch (err: any) {
+      console.error('Admin email failed:', err.message);
+      adminEmailResult = { error: err.message };
+    }
+
+    // Success if at least admin email was sent
+    const adminSuccess = adminEmailResult?.data?.id && !adminEmailResult?.error;
 
     return new Response(
       JSON.stringify({
-        success,
+        success: adminSuccess,
         customerEmail: customerEmailResult,
         adminEmail: adminEmailResult,
+        note: customerEmailResult?.error ? 'Cần xác minh domain tại resend.com/domains để gửi email cho khách hàng' : null,
       }),
       {
-        status: success ? 200 : 502,
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
