@@ -151,21 +151,30 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log('Sending email to:', data.customerEmail);
-    const emailResult = await resend.emails.send({
-      from: RESEND_FROM,
-      to: [data.customerEmail],
-      subject: `${statusInfo.icon} Đơn hàng #${data.orderId} - ${statusInfo.label}`,
-      html: emailHtml,
-    });
-    console.log('Email result:', emailResult);
-
-    if (emailResult?.error) {
-      throw new Error(emailResult.error.message);
+    let emailResult: any = null;
+    
+    try {
+      console.log('Sending status email to:', data.customerEmail);
+      emailResult = await resend.emails.send({
+        from: RESEND_FROM,
+        to: [data.customerEmail],
+        subject: `${statusInfo.icon} Đơn hàng #${data.orderId} - ${statusInfo.label}`,
+        html: emailHtml,
+      });
+      console.log('Email result:', emailResult);
+    } catch (err: any) {
+      console.error('Status email failed:', err.message);
+      emailResult = { error: err.message };
     }
 
+    const success = emailResult?.data?.id && !emailResult?.error;
+
     return new Response(
-      JSON.stringify({ success: true, email: emailResult }),
+      JSON.stringify({ 
+        success, 
+        email: emailResult,
+        note: !success ? 'Cần xác minh domain tại resend.com/domains để gửi email cho khách hàng' : null,
+      }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
