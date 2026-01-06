@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Home,
-  Bell
+  Bell,
+  Wallet
 } from "lucide-react";
 import { useState } from "react";
 import OverviewTab from "./OverviewTab";
@@ -21,9 +22,11 @@ import UsersTab from "./UsersTab";
 import CouponsTab from "./CouponsTab";
 import ProductsTab from "./ProductsTab";
 import SettingsTab from "./SettingsTab";
+import ExpensesTab from "./ExpensesTab";
 import { toast } from "sonner";
 import { useAdminData } from "@/hooks/useAdminData";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -49,6 +52,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     { id: "users", label: "Người dùng", icon: Users },
     { id: "products", label: "Sản phẩm", icon: Package },
     { id: "coupons", label: "Mã giảm giá", icon: Ticket },
+    { id: "expenses", label: "Chi tiêu", icon: Wallet },
     { id: "settings", label: "Cài đặt", icon: Settings },
   ];
 
@@ -69,6 +73,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         return <ProductsTab />;
       case "coupons":
         return <CouponsTab />;
+      case "expenses":
+        return <ExpensesTab />;
       case "settings":
         return <SettingsTab />;
       default:
@@ -236,6 +242,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
           </div>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
