@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { User as UserType } from "@/types";
 import logoAvatar from "@/assets/logo-avatar.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface HeaderProps {
   cartCount: number;
@@ -63,6 +64,9 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Cart */}
             <Button
               variant="ghost"
