@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, BookOpen, GraduationCap } from "lucide-react";
+import { ShoppingCart, BookOpen, Clock, TrendingUp } from "lucide-react";
 import type { CartItem } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
@@ -24,16 +24,10 @@ const CourseSection = ({ onAddToCart }: CourseSectionProps) => {
 
   if (isLoading) {
     return (
-      <section id="courses" className="section-padding bg-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-glow opacity-30" />
-        <div className="container-tight relative">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-display gradient-text mb-4">
-              Khóa học
-            </h2>
-          </div>
-          <div className="flex justify-center">
-            <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+      <section id="courses" className="section-padding bg-background">
+        <div className="container-tight">
+          <div className="flex justify-center py-20">
+            <div className="w-10 h-10 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
           </div>
         </div>
       </section>
@@ -45,24 +39,16 @@ const CourseSection = ({ onAddToCart }: CourseSectionProps) => {
   }
 
   return (
-    <section id="courses" className="section-padding bg-background relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute inset-0 bg-gradient-glow opacity-20" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-[80px]" />
-
-      <div className="container-tight relative z-10">
+    <section id="courses" className="section-padding bg-background">
+      <div className="container-tight">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-primary/20 mb-6">
-            <GraduationCap className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Chương trình đào tạo</span>
-          </div>
-          <h2 className="text-3xl md:text-5xl font-bold font-display gradient-text mb-4">
-            Khóa học chất lượng
+        <div className="max-w-2xl mb-16">
+          <p className="text-primary font-semibold text-sm uppercase tracking-wide mb-3">Khóa học nổi bật</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold font-display text-foreground mb-4">
+            Đầu tư thông minh cho điểm số của bạn
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Được thiết kế riêng cho sinh viên FPT University với nội dung cập nhật theo chương trình học
+          <p className="text-muted-foreground text-lg">
+            Mỗi khóa học được thiết kế để giúp bạn nắm vững kiến thức và đạt điểm cao trong thời gian ngắn nhất.
           </p>
         </div>
 
@@ -71,47 +57,54 @@ const CourseSection = ({ onAddToCart }: CourseSectionProps) => {
           {courses.map((course, index) => (
             <div 
               key={course.id} 
-              className="group card-premium flex flex-col h-[26rem] animate-slide-up opacity-0"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="group bg-card rounded-2xl border border-border overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all duration-300 flex flex-col animate-slide-up opacity-0"
+              style={{ animationDelay: `${index * 0.08}s` }}
             >
               {/* Image */}
-              <div className="relative h-40 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl bg-muted">
+              <div className="relative h-40 overflow-hidden bg-muted">
                 {course.image_url ? (
                   <img 
                     src={course.image_url} 
                     alt={course.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-card">
-                    <BookOpen className="h-12 w-12 text-muted-foreground/50" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <BookOpen className="h-10 w-10 text-muted-foreground/40" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                <div className="absolute top-3 right-3 px-3 py-1 rounded-full glass text-xs font-semibold text-primary">
+                <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-background/90 text-xs font-bold text-primary">
                   {course.code}
                 </div>
               </div>
 
               {/* Content */}
-              <div className="flex-1 flex flex-col">
-                <h3 className="font-bold font-display text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+              <div className="p-5 flex-1 flex flex-col">
+                <h3 className="font-bold font-display text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                   {course.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4 flex-grow line-clamp-3">
-                  {course.description}
+                <p className="text-sm text-muted-foreground mb-4 flex-grow line-clamp-2">
+                  {course.description || "Hỗ trợ ôn tập và đạt điểm cao"}
                 </p>
                 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
+                {/* Benefits tags */}
+                <div className="flex gap-2 mb-4">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    Tiết kiệm thời gian
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between pt-4 border-t border-border">
                   <div>
-                    <span className="text-2xl font-bold font-display gradient-text">
+                    <span className="text-xl font-bold font-display text-foreground">
                       {course.price.toLocaleString('vi-VN')}
                     </span>
                     <span className="text-sm text-muted-foreground ml-1">đ</span>
                   </div>
                   <Button 
                     size="sm" 
-                    className="bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-elegant"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={() => handleAddToCart(course)}
                   >
                     <ShoppingCart className="h-4 w-4 mr-1" />
