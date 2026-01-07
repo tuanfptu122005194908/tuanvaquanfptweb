@@ -1,114 +1,112 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Premium Design System - Light & Dark Mode */
+/* Clean Professional Design System - 2 Primary Colors */
 
 @layer base {
-  /* Light Mode */
+  /* Light Mode - Clean & Minimal */
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 15% 10%;
+    --foreground: 220 20% 12%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 240 15% 10%;
+    --card: 220 15% 98%;
+    --card-foreground: 220 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 15% 10%;
+    --popover-foreground: 220 20% 12%;
 
-    /* Vibrant purple primary */
-    --primary: 270 85% 55%;
+    /* Primary: Deep Indigo */
+    --primary: 245 85% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Electric blue secondary */
-    --secondary: 215 90% 55%;
+    /* Secondary: Same as primary for consistency */
+    --secondary: 245 70% 48%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Soft muted tones */
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 5% 45%;
+    /* Soft neutral muted */
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Pink/magenta accent */
-    --accent: 330 85% 55%;
+    /* Accent: Warm coral for CTAs */
+    --accent: 12 90% 58%;
     --accent-foreground: 0 0% 100%;
 
     /* Status colors */
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 155 70% 45%;
+    --success: 160 70% 42%;
     --success-foreground: 0 0% 100%;
 
     /* Borders and inputs */
-    --border: 240 5% 85%;
-    --input: 240 5% 90%;
-    --ring: 270 85% 55%;
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 245 85% 55%;
 
     --radius: 0.75rem;
 
-    /* Premium gradients - light mode */
-    --gradient-primary: linear-gradient(135deg, hsl(270 85% 55%), hsl(215 90% 55%));
-    --gradient-accent: linear-gradient(135deg, hsl(270 85% 55%), hsl(330 85% 55%));
-    --gradient-success: linear-gradient(135deg, hsl(155 70% 45%), hsl(175 65% 50%));
-    --gradient-hero: linear-gradient(180deg, hsl(270 85% 55% / 0.08), transparent);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 97%));
-    --gradient-glow: radial-gradient(ellipse at center, hsl(270 85% 55% / 0.15), transparent 70%);
+    /* Clean gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(245 85% 55%), hsl(245 70% 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(12 90% 58%), hsl(12 80% 52%));
+    --gradient-success: linear-gradient(135deg, hsl(160 70% 42%), hsl(160 60% 38%));
+    --gradient-hero: linear-gradient(180deg, hsl(245 85% 55% / 0.04), transparent);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 15% 98%));
+    --gradient-glow: radial-gradient(ellipse at center, hsl(245 85% 55% / 0.08), transparent 70%);
     
-    /* Premium shadows - light mode */
-    --shadow-elegant: 0 25px 50px -12px hsl(270 85% 55% / 0.15);
-    --shadow-glow: 0 0 60px hsl(270 85% 55% / 0.15);
-    --shadow-soft: 0 4px 20px hsl(0 0% 0% / 0.08);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.06);
+    /* Subtle shadows */
+    --shadow-elegant: 0 20px 40px -12px hsl(220 20% 12% / 0.12);
+    --shadow-glow: 0 0 40px hsl(245 85% 55% / 0.15);
+    --shadow-soft: 0 4px 16px hsl(220 20% 12% / 0.06);
+    --shadow-card: 0 2px 12px hsl(220 20% 12% / 0.04);
   }
 
   /* Dark Mode */
   .dark {
-    --background: 240 15% 6%;
+    --background: 225 20% 7%;
     --foreground: 0 0% 98%;
 
-    --card: 240 15% 9%;
+    --card: 225 18% 10%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 15% 9%;
+    --popover: 225 18% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 270 95% 65%;
+    --primary: 245 85% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 100% 60%;
+    --secondary: 245 75% 58%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 10% 15%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 225 15% 14%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 330 90% 60%;
+    --accent: 12 90% 62%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 155 70% 50%;
+    --success: 160 70% 48%;
     --success-foreground: 0 0% 100%;
 
-    --border: 240 10% 18%;
-    --input: 240 10% 18%;
-    --ring: 270 95% 65%;
+    --border: 225 15% 18%;
+    --input: 225 15% 18%;
+    --ring: 245 85% 65%;
 
-    /* Premium gradients - dark mode */
-    --gradient-primary: linear-gradient(135deg, hsl(270 95% 65%), hsl(215 100% 60%));
-    --gradient-accent: linear-gradient(135deg, hsl(270 95% 65%), hsl(330 90% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(155 70% 50%), hsl(175 65% 55%));
-    --gradient-hero: linear-gradient(180deg, hsl(270 95% 65% / 0.15), transparent);
-    --gradient-card: linear-gradient(180deg, hsl(240 15% 12%), hsl(240 15% 8%));
-    --gradient-glow: radial-gradient(ellipse at center, hsl(270 95% 65% / 0.3), transparent 70%);
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(245 85% 65%), hsl(245 75% 58%));
+    --gradient-accent: linear-gradient(135deg, hsl(12 90% 62%), hsl(12 80% 56%));
+    --gradient-success: linear-gradient(135deg, hsl(160 70% 48%), hsl(160 60% 42%));
+    --gradient-hero: linear-gradient(180deg, hsl(245 85% 65% / 0.1), transparent);
+    --gradient-card: linear-gradient(180deg, hsl(225 18% 12%), hsl(225 18% 9%));
+    --gradient-glow: radial-gradient(ellipse at center, hsl(245 85% 65% / 0.2), transparent 70%);
     
-    /* Premium shadows - dark mode */
-    --shadow-elegant: 0 25px 50px -12px hsl(270 95% 65% / 0.25);
-    --shadow-glow: 0 0 60px hsl(270 95% 65% / 0.3);
-    --shadow-soft: 0 4px 20px hsl(0 0% 0% / 0.4);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
+    /* Dark shadows */
+    --shadow-elegant: 0 20px 40px -12px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px hsl(245 85% 65% / 0.25);
+    --shadow-soft: 0 4px 16px hsl(0 0% 0% / 0.3);
+    --shadow-card: 0 2px 12px hsl(0 0% 0% / 0.2);
   }
 }
 
@@ -122,12 +120,13 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Manrope', system-ui, sans-serif;
+    @apply tracking-tight;
   }
 }
 

@@ -1,4 +1,4 @@
-import { ShoppingCart, User, Menu, X, LogOut, Package, Sparkles } from "lucide-react";
+import { ShoppingCart, User, Menu, X, LogOut, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { User as UserType } from "@/types";
@@ -27,25 +27,19 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full glass-strong">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container-tight">
-        <div className="flex h-18 py-4 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-primary rounded-full blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
-              <img 
-                src={logoAvatar} 
-                alt="Logo" 
-                className="relative h-11 w-11 rounded-full ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all"
-              />
-            </div>
+          <a href="/" className="flex items-center gap-3">
+            <img 
+              src={logoAvatar} 
+              alt="Logo" 
+              className="h-10 w-10 rounded-full"
+            />
             <div className="hidden sm:block">
-              <h1 className="text-lg md:text-xl font-bold font-display text-foreground flex items-center gap-2">
-                Tuấn & Quân
-                <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              </h1>
-              <p className="text-xs text-muted-foreground">Dịch vụ học tập chất lượng</p>
+              <h1 className="text-lg font-bold font-display text-foreground">Tuấn & Quân</h1>
+              <p className="text-xs text-muted-foreground">Dịch vụ học tập FPT</p>
             </div>
           </a>
 
@@ -55,7 +49,7 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
               <a
                 key={item.label}
                 href={item.href}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.label}
               </a>
@@ -64,66 +58,49 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Cart */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="relative"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-accent text-primary-foreground text-xs font-bold flex items-center justify-center shadow-glow animate-pulse">
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
             </Button>
 
-            {/* User Actions */}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onOrdersClick} 
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                >
+                <Button variant="ghost" size="sm" onClick={onOrdersClick}>
                   <Package className="h-4 w-4 mr-2" />
                   Đơn hàng
                 </Button>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
-                  <div className="h-7 w-7 rounded-full bg-gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
+                  <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-medium text-foreground">{user.name}</span>
+                  <span className="text-sm font-medium">{user.name}</span>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={onLogout} 
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                >
+                <Button variant="ghost" size="icon" onClick={onLogout}>
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <Button 
-                className="hidden md:flex bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-elegant"
-                onClick={onLoginClick}
-              >
+              <Button className="hidden md:flex bg-primary hover:bg-primary/90 text-primary-foreground" onClick={onLoginClick}>
                 <User className="h-4 w-4 mr-2" />
                 Đăng nhập
               </Button>
             )}
 
-            {/* Mobile Menu Toggle */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -133,13 +110,12 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-1 border-t border-border animate-slide-up">
-            {menuItems.map((item, idx) => (
+          <div className="md:hidden py-4 space-y-1 border-t border-border">
+            {menuItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all"
-                style={{ animationDelay: `${idx * 0.05}s` }}
+                className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
@@ -148,41 +124,22 @@ const Header = ({ cartCount, onCartClick, onLoginClick, onLogout, onOrdersClick,
             <div className="pt-4 border-t border-border mt-4">
               {user ? (
                 <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      onOrdersClick();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-all flex items-center gap-2"
-                  >
+                  <button onClick={() => { onOrdersClick(); setMobileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg flex items-center gap-2">
                     <Package className="h-4 w-4" />
                     Đơn hàng
                   </button>
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
+                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-primary-foreground">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="font-medium text-foreground">{user.name}</span>
+                      <span className="font-medium">{user.name}</span>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={onLogout} 
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      Đăng xuất
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={onLogout} className="text-destructive">Đăng xuất</Button>
                   </div>
                 </div>
               ) : (
-                <Button
-                  onClick={() => {
-                    onLoginClick();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground"
-                >
+                <Button onClick={() => { onLoginClick(); setMobileMenuOpen(false); }} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   <User className="h-4 w-4 mr-2" />
                   Đăng nhập
                 </Button>
