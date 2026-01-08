@@ -5,15 +5,19 @@ import heroBannerAnime from "@/assets/hero-banner-anime.png";
 const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      {/* Background image with overlay */}
+      {/* Full width background image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBannerAnime})` }}
-      />
+        className="absolute inset-0 w-full h-full"
+      >
+        <img 
+          src={heroBannerAnime} 
+          alt="Hero Banner" 
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
       
-      {/* Clean gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+      {/* Subtle overlay only on text area for readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent" />
 
       {/* Content */}
       <div className="relative z-10 container-tight py-24 md:py-32">
