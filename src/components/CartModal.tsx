@@ -308,22 +308,21 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                     
                     {/* Payment confirmation checkbox */}
                     <div 
-                      className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                      className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
                         hasConfirmedPayment 
                           ? 'bg-green-50 border-green-500 dark:bg-green-950/30' 
                           : 'bg-amber-50 border-amber-400 dark:bg-amber-950/30 animate-pulse'
                       }`}
-                      onClick={() => setHasConfirmedPayment(!hasConfirmedPayment)}
                     >
                       <Checkbox 
                         id="payment-confirm"
                         checked={hasConfirmedPayment}
-                        onCheckedChange={(checked) => setHasConfirmedPayment(checked as boolean)}
+                        onCheckedChange={(checked) => setHasConfirmedPayment(Boolean(checked))}
                         className="mt-0.5 h-5 w-5"
                       />
                       <label 
                         htmlFor="payment-confirm" 
-                        className="text-left cursor-pointer select-none"
+                        className="text-left cursor-pointer select-none flex-1"
                       >
                         <span className="font-semibold block mb-1">
                           {hasConfirmedPayment ? (
