@@ -83,42 +83,57 @@ export function SearchBar({ onAddToCart }: SearchBarProps) {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
+      {/* Highlight Label */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+        <span className="text-sm font-semibold text-primary uppercase tracking-wide">
+          Tìm kiếm nhanh
+        </span>
+        <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+      </div>
+
       {/* Main Search Container */}
       <div className={cn(
         "relative transition-all duration-300",
         isFocused && "scale-[1.02]"
       )}>
-        {/* Glow effect */}
+        {/* Animated glow effect - always visible */}
         <div className={cn(
-          "absolute -inset-1 rounded-2xl bg-gradient-primary opacity-0 blur-xl transition-all duration-300",
-          isFocused && "opacity-40"
+          "absolute -inset-2 rounded-3xl transition-all duration-500",
+          "bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite]",
+          isFocused ? "opacity-60 blur-xl" : "opacity-30 blur-lg"
         )} />
+        
+        {/* Pulsing ring */}
+        <div className="absolute -inset-1 rounded-2xl border-2 border-primary/40 animate-pulse" />
         
         {/* Search Box */}
         <div className={cn(
-          "relative glass rounded-2xl border transition-all duration-300",
+          "relative bg-background rounded-2xl border-2 transition-all duration-300",
           isFocused 
-            ? "border-primary/50 shadow-elegant" 
-            : "border-border/50 hover:border-primary/30"
+            ? "border-primary shadow-[0_0_30px_rgba(139,92,246,0.3)]" 
+            : "border-primary/50 hover:border-primary shadow-[0_0_20px_rgba(139,92,246,0.15)]"
         )}>
-          <div className="flex items-center px-2">
+          <div className="flex items-center px-3">
             {/* Search Icon */}
-            <div className="flex items-center justify-center w-12 h-14">
-              <Search className={cn(
-                "h-5 w-5 transition-colors duration-300",
-                isFocused ? "text-primary" : "text-muted-foreground"
-              )} />
+            <div className="flex items-center justify-center w-12 h-16">
+              <div className={cn(
+                "p-2 rounded-xl transition-all duration-300",
+                isFocused ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+              )}>
+                <Search className="h-5 w-5" />
+              </div>
             </div>
             
             {/* Input */}
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Tìm kiếm mã môn: PRO192, MAE101..."
+              placeholder="🔍 Nhập mã môn: PRO192, MAE101, CSD201..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              className="flex-1 h-14 text-base border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+              className="flex-1 h-16 text-lg font-medium border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/70"
             />
             
             {/* Clear button */}
@@ -128,23 +143,34 @@ export function SearchBar({ onAddToCart }: SearchBarProps) {
                   setQuery('');
                   inputRef.current?.focus();
                 }}
-                className="mr-2 p-2 rounded-lg bg-muted/50 hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
+                className="mr-2 p-2 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all duration-200"
               >
                 <X className="h-4 w-4" />
               </button>
+            )}
+            
+            {/* Search button */}
+            {!query && (
+              <div className="mr-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">
+                Tìm
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Helper tags */}
-      <div className="flex items-center justify-center gap-4 mt-4">
+      {/* Helper tags with better visibility */}
+      <div className="flex items-center justify-center gap-3 mt-5 flex-wrap">
+        <span className="text-xs text-muted-foreground mr-1">Danh mục:</span>
         {Object.entries(typeLabels).map(([type, label]) => (
-          <div key={type} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <div className={cn("w-2 h-2 rounded-full", typeColors[type]?.bg.replace('/10', ''))} 
-                 style={{ background: type === 'course' ? 'hsl(270 95% 65%)' : 
-                          type === 'document' ? 'hsl(215 100% 60%)' : 
-                          type === 'english' ? 'hsl(330 90% 60%)' : 'hsl(155 70% 50%)' }} />
+          <div 
+            key={type} 
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 cursor-default",
+              typeColors[type]?.bg, typeColors[type]?.text
+            )}
+          >
+            <span className={typeColors[type]?.icon}>{typeIcons[type]}</span>
             <span>{label}</span>
           </div>
         ))}
