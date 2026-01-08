@@ -2,7 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, RefreshCw } from "lucide-react";
+import { X, RefreshCw, Smartphone, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useEffect } from "react";
 import type { CartItem } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,7 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
   } | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string>("");
+  const [hasConfirmedPayment, setHasConfirmedPayment] = useState(false);
 
   // Fetch payment QR from site settings
   useEffect(() => {
@@ -99,6 +101,11 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
 
     if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      return;
+    }
+
+    if (!hasConfirmedPayment) {
+      toast.error("Vui lòng xác nhận đã quét mã QR và chuyển khoản!");
       return;
     }
 
@@ -267,31 +274,98 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                   />
                 </div>
 
-                {/* QR Code */}
-                <div className="bg-muted p-4 rounded-lg text-center">
-                  <h4 className="font-bold mb-2">💳 Thông tin thanh toán</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Vui lòng quét mã QR để thanh toán
-                  </p>
-                  <img
-                    src={paymentQrUrl || qrImageFallback}
-                    alt="QR Code thanh toán"
-                    className="max-w-sm mx-auto object-contain"
-                  />
+                {/* QR Code - Highlighted Payment Section */}
+                <div className="relative border-2 border-primary rounded-xl overflow-hidden">
+                  {/* Animated border glow */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 animate-pulse pointer-events-none" />
+                  
+                  <div className="relative bg-gradient-to-b from-primary/5 to-background p-6 text-center">
+                    {/* Header with attention-grabbing styling */}
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <div className="flex items-center gap-1 bg-destructive/10 text-destructive px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+                        <AlertTriangle className="h-4 w-4" />
+                        QUAN TRỌNG
+                      </div>
+                    </div>
+                    
+                    <h4 className="text-xl font-bold text-primary mb-2 flex items-center justify-center gap-2">
+                      <Smartphone className="h-6 w-6" />
+                      Quét mã QR để thanh toán
+                    </h4>
+                    
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Vui lòng chuyển khoản <span className="font-bold text-primary">{total.toLocaleString('vi-VN')}đ</span> trước khi xác nhận đơn hàng
+                    </p>
+                    
+                    {/* QR Code with prominent display */}
+                    <div className="bg-white p-4 rounded-xl shadow-lg inline-block mb-4 border-2 border-primary/20">
+                      <img
+                        src={paymentQrUrl || qrImageFallback}
+                        alt="QR Code thanh toán"
+                        className="max-w-[280px] mx-auto object-contain"
+                      />
+                    </div>
+                    
+                    {/* Payment confirmation checkbox */}
+                    <div 
+                      className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                        hasConfirmedPayment 
+                          ? 'bg-green-50 border-green-500 dark:bg-green-950/30' 
+                          : 'bg-amber-50 border-amber-400 dark:bg-amber-950/30 animate-pulse'
+                      }`}
+                      onClick={() => setHasConfirmedPayment(!hasConfirmedPayment)}
+                    >
+                      <Checkbox 
+                        id="payment-confirm"
+                        checked={hasConfirmedPayment}
+                        onCheckedChange={(checked) => setHasConfirmedPayment(checked as boolean)}
+                        className="mt-0.5 h-5 w-5"
+                      />
+                      <label 
+                        htmlFor="payment-confirm" 
+                        className="text-left cursor-pointer select-none"
+                      >
+                        <span className="font-semibold block mb-1">
+                          {hasConfirmedPayment ? (
+                            <span className="text-green-600 flex items-center gap-1">
+                              <CheckCircle2 className="h-4 w-4" />
+                              Đã xác nhận thanh toán
+                            </span>
+                          ) : (
+                            <span className="text-amber-700 dark:text-amber-400">
+                              ⚠️ Tôi đã quét mã QR và chuyển khoản thành công
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Vui lòng tick vào ô này sau khi đã chuyển khoản để xác nhận đơn hàng
+                        </span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600"
-                  disabled={isCreating}
+                  className={`w-full text-lg py-6 transition-all ${
+                    hasConfirmedPayment 
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/25' 
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
+                  disabled={isCreating || !hasConfirmedPayment}
                 >
                   {isCreating ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
                       Đang xử lý...
                     </>
+                  ) : hasConfirmedPayment ? (
+                    <>
+                      <CheckCircle2 className="h-5 w-5 mr-2" />
+                      Xác nhận đặt hàng
+                    </>
                   ) : (
-                    "Xác nhận đặt hàng"
+                    "Vui lòng xác nhận đã thanh toán ở trên ☝️"
                   )}
                 </Button>
               </form>
