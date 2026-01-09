@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Trash2, 
-  Phone, 
   Mail, 
   User, 
   Package, 
@@ -182,7 +181,7 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
               <div className="relative flex-1 md:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Tìm theo tên, SĐT, mã đơn..."
+                  placeholder="Tìm theo tên, MSSV, mã đơn..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-11 bg-background/80 backdrop-blur-sm border-muted-foreground/20 focus:border-primary transition-colors"
@@ -336,11 +335,11 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
                         </div>
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-sm">
-                            <Phone className="h-5 w-5 text-white" />
+                            <User className="h-5 w-5 text-white" />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Số điện thoại</p>
-                            <p className="font-medium text-foreground">{order.customer_info.phone}</p>
+                            <p className="text-xs text-muted-foreground">Mã sinh viên</p>
+                            <p className="font-medium text-foreground font-mono">{order.customer_info.phone}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">

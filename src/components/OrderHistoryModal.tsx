@@ -119,7 +119,7 @@ const OrderHistoryModal = ({ isOpen, onClose }: OrderHistoryModalProps) => {
                 {expandedOrder === order.id && (
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
                     <p><span className="font-medium">Người nhận:</span> {order.customer_info.name}</p>
-                    <p><span className="font-medium">Điện thoại:</span> {order.customer_info.phone}</p>
+                    <p><span className="font-medium">Mã sinh viên:</span> {order.customer_info.phone}</p>
                     <p><span className="font-medium">Email:</span> {order.customer_info.email}</p>
                     {order.customer_info.note && (
                       <p><span className="font-medium">Ghi chú:</span> {order.customer_info.note}</p>

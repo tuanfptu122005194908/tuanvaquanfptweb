@@ -243,13 +243,12 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Số điện thoại *</label>
+                  <label className="block text-sm font-medium mb-1">Mã sinh viên *</label>
                   <Input
                     required
-                    type="tel"
                     value={customerInfo.phone}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                    placeholder="Nhập số điện thoại"
+                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value.toUpperCase() })}
+                    placeholder="VD: SE123456"
                   />
                 </div>
 

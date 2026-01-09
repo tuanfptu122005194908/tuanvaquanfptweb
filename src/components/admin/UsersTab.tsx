@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Download, Users, Mail, Phone, ShoppingBag, DollarSign, Calendar, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, Download, Users, Mail, ShoppingBag, DollarSign, Calendar, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +56,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
       return;
     }
 
-    const headers = ['ID', 'Tên', 'Email', 'SĐT', 'Số đơn hàng', 'Tổng chi tiêu', 'Ngày đăng ký'];
+    const headers = ['ID', 'Tên', 'Email', 'MSSV', 'Số đơn hàng', 'Tổng chi tiêu', 'Ngày đăng ký'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => [
@@ -161,7 +161,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
           <div className="relative flex-1 md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm theo tên, email, SĐT..."
+              placeholder="Tìm theo tên, email, MSSV..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-background"
@@ -242,8 +242,8 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          <span className="text-foreground">
+                          <span className="text-xs font-medium text-muted-foreground shrink-0">MSSV:</span>
+                          <span className="text-foreground font-mono">
                             {user.phone || <span className="text-muted-foreground italic">Chưa có</span>}
                           </span>
                         </div>
