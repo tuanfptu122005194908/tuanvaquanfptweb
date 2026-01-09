@@ -202,35 +202,43 @@ serve(async (req) => {
     }
 
     // Send order confirmation emails (non-blocking)
-    try {
-      console.log('Triggering send-order-email function...');
+    const emailPayload = {
+      orderId: order.id,
+      customerName: customerInfo.name,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      items,
+      total: finalTotal,
+      discountAmount,
+      couponCode: couponCode || null,
+      note: customerInfo.note || '',
+    };
 
-      const emailPayload = {
-        orderId: order.id,
-        customerName: customerInfo.name,
-        customerEmail: customerInfo.email,
-        customerPhone: customerInfo.phone,
-        items,
-        total: finalTotal,
-        discountAmount,
-        couponCode: couponCode || null,
-        note: customerInfo.note || '',
-      };
+    // Send email in background using waitUntil
+    const sendEmailTask = async () => {
+      try {
+        console.log('Sending order email via fetch...');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+        
+        const response = await fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify(emailPayload),
+        });
+        
+        const result = await response.json();
+        console.log('send-order-email response:', response.status, result);
+      } catch (emailError) {
+        console.error('Failed to send order email:', emailError);
+      }
+    };
 
-      supabaseAdmin.functions
-        .invoke('send-order-email', { body: emailPayload })
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('send-order-email invoke error:', error);
-            return;
-          }
-          console.log('send-order-email result:', data);
-        })
-        .catch((err) => console.error('send-order-email invoke failed:', err));
-    } catch (emailError) {
-      console.error('Failed to trigger send-order-email:', emailError);
-      // Don't fail the order if email fails
-    }
+    // Run email sending in background (fire and forget)
+    sendEmailTask();
 
     return new Response(
       JSON.stringify({ success: true, order }),
