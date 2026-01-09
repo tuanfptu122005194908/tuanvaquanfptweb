@@ -147,9 +147,9 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
           ) : (
             <>
               {cart.map((item, index) => (
-                <div key={index} className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                <div key={index} className="bg-muted p-4 rounded-lg flex items-center justify-between">
                   <div className="flex-grow">
-                    <h4 className="font-semibold">{item.code || item.name}</h4>
+                    <h4 className="font-semibold text-foreground">{item.code || item.name}</h4>
                     {item.code && <p className="text-sm text-muted-foreground">{item.name}</p>}
                     {item.type === 'coursera' && item.quantity && (
                       <p className="text-xs text-muted-foreground">Số lượng: {item.quantity}</p>
@@ -204,7 +204,7 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                   )}
                 </div>
                 {appliedCoupon && (
-                  <p className="text-sm text-green-600">
+                  <p className="text-sm text-success">
                     ✓ Đã áp dụng mã giảm {appliedCoupon.discount.toLocaleString('vi-VN')}đ
                   </p>
                 )}
@@ -217,7 +217,7 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                   <span>{subtotal.toLocaleString('vi-VN')}đ</span>
                 </div>
                 {appliedCoupon && (
-                  <div className="flex items-center justify-between text-green-600">
+                  <div className="flex items-center justify-between text-success">
                     <span>Giảm giá:</span>
                     <span>-{appliedCoupon.discount.toLocaleString('vi-VN')}đ</span>
                   </div>
@@ -297,7 +297,7 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                     </p>
                     
                     {/* QR Code with prominent display */}
-                    <div className="bg-white p-4 rounded-xl shadow-lg inline-block mb-4 border-2 border-primary/20">
+                    <div className="bg-background p-4 rounded-xl shadow-lg inline-block mb-4 border-2 border-primary/20">
                       <img
                         src={paymentQrUrl || qrImageFallback}
                         alt="QR Code thanh toán"
@@ -309,8 +309,8 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                     <div 
                       className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
                         hasConfirmedPayment 
-                          ? 'bg-green-50 border-green-500 dark:bg-green-950/30' 
-                          : 'bg-amber-50 border-amber-400 dark:bg-amber-950/30 animate-pulse'
+                          ? 'bg-success/10 border-success' 
+                          : 'bg-accent/10 border-accent animate-pulse'
                       }`}
                     >
                       <Checkbox 
@@ -325,12 +325,12 @@ const CartModal = ({ isOpen, onClose, cart, onRemoveItem, onClearCart }: CartMod
                       >
                         <span className="font-semibold block mb-1">
                           {hasConfirmedPayment ? (
-                            <span className="text-green-600 flex items-center gap-1">
+                            <span className="text-success flex items-center gap-1">
                               <CheckCircle2 className="h-4 w-4" />
                               Đã xác nhận thanh toán
                             </span>
                           ) : (
-                            <span className="text-amber-700 dark:text-amber-400">
+                            <span className="text-accent">
                               ⚠️ Tôi đã quét mã QR và chuyển khoản thành công
                             </span>
                           )}
