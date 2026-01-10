@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Edit, X, Ticket, Percent, DollarSign, Calendar, Hash, ShoppingCart, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface Coupon {
   id: string;
@@ -172,6 +174,20 @@ const CouponsTab = () => {
   const filteredCoupons = coupons.filter(coupon =>
     coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedCoupons,
+    setPage,
+    nextPage,
+    prevPage,
+    goToFirstPage,
+    goToLastPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ items: filteredCoupons, itemsPerPage: 9 });
 
   if (isLoading) {
     return (
@@ -346,64 +362,81 @@ const CouponsTab = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCoupons.map((coupon) => (
-            <Card 
-              key={coupon.id} 
-              className={`border bg-card overflow-hidden ${!coupon.active && 'opacity-60'}`}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <Badge variant="outline" className="font-mono text-sm mb-2">
-                      {coupon.code}
-                    </Badge>
-                    <p className="font-semibold text-foreground">
-                      {coupon.discount_type === 'percentage' 
-                        ? `Giảm ${coupon.discount_value}%` 
-                        : `Giảm ${coupon.discount_value.toLocaleString('vi-VN')}₫`}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={() => handleEdit(coupon)} className="h-8 w-8">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => handleDelete(coupon.id, coupon.code)} className="h-8 w-8 text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-3.5 w-3.5" />
-                    <span>Đơn tối thiểu: {coupon.min_order_value.toLocaleString('vi-VN')}₫</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-3.5 w-3.5" />
-                    <span>Đã dùng: {coupon.used_count}{coupon.max_uses ? ` / ${coupon.max_uses}` : ''}</span>
-                  </div>
-                  {coupon.expires_at && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>Hết hạn: {new Date(coupon.expires_at).toLocaleDateString('vi-VN')}</span>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedCoupons.map((coupon) => (
+              <Card 
+                key={coupon.id} 
+                className={`border bg-card overflow-hidden ${!coupon.active && 'opacity-60'}`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <Badge variant="outline" className="font-mono text-sm mb-2">
+                        {coupon.code}
+                      </Badge>
+                      <p className="font-semibold text-foreground">
+                        {coupon.discount_type === 'percentage' 
+                          ? `Giảm ${coupon.discount_value}%` 
+                          : `Giảm ${coupon.discount_value.toLocaleString('vi-VN')}₫`}
+                      </p>
                     </div>
-                  )}
-                </div>
+                    <div className="flex gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => handleEdit(coupon)} className="h-8 w-8">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(coupon.id, coupon.code)} className="h-8 w-8 text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
 
-                <div className="flex items-center justify-between pt-3 border-t">
-                  <Badge variant={coupon.active ? "default" : "secondary"}>
-                    {coupon.active ? 'Đang hoạt động' : 'Đã tắt'}
-                  </Badge>
-                  <Switch
-                    checked={coupon.active}
-                    onCheckedChange={() => toggleActive(coupon.id, coupon.active)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="h-3.5 w-3.5" />
+                      <span>Đơn tối thiểu: {coupon.min_order_value.toLocaleString('vi-VN')}₫</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-3.5 w-3.5" />
+                      <span>Đã dùng: {coupon.used_count}{coupon.max_uses ? ` / ${coupon.max_uses}` : ''}</span>
+                    </div>
+                    {coupon.expires_at && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Hết hạn: {new Date(coupon.expires_at).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <Badge variant={coupon.active ? "default" : "secondary"}>
+                      {coupon.active ? 'Đang hoạt động' : 'Đã tắt'}
+                    </Badge>
+                    <Switch
+                      checked={coupon.active}
+                      onCheckedChange={() => toggleActive(coupon.id, coupon.active)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onNextPage={nextPage}
+              onPrevPage={prevPage}
+              onFirstPage={goToFirstPage}
+              onLastPage={goToLastPage}
+            />
+          </Card>
+        </>
       )}
     </div>
   );

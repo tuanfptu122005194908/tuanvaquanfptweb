@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface UsersTabProps {
   users: AdminUser[];
@@ -124,6 +126,20 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedUsers,
+    setPage,
+    nextPage,
+    prevPage,
+    goToFirstPage,
+    goToLastPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ items: filteredAndSortedUsers, itemsPerPage: 10 });
+
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
       return `${(amount / 1000000).toFixed(1)}M₫`;
@@ -218,7 +234,7 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <TableRow key={user.id} className="group hover:bg-muted/30">
                     <TableCell>
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center text-primary font-bold text-sm border-2 border-primary/20">
@@ -285,10 +301,19 @@ const UsersTab = ({ users, isLoading, onRefresh }: UsersTabProps) => {
             </Table>
           </div>
           
-          {/* Table Footer */}
-          <div className="px-4 py-3 border-t bg-muted/30 text-sm text-muted-foreground">
-            Hiển thị {filteredAndSortedUsers.length} / {users.length} người dùng
-          </div>
+          {/* Pagination */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalItems={totalItems}
+            onPageChange={setPage}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onFirstPage={goToFirstPage}
+            onLastPage={goToLastPage}
+          />
         </div>
       )}
     </div>
