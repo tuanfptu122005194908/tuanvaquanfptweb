@@ -25,6 +25,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Order } from "@/hooks/useOrders";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface OrdersTabProps {
   orders: Order[];
@@ -149,6 +151,20 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
     return matchesSearch && matchesStatus;
   });
 
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedOrders,
+    setPage,
+    nextPage,
+    prevPage,
+    goToFirstPage,
+    goToLastPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ items: filteredOrders, itemsPerPage: 10 });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -225,220 +241,248 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {filteredOrders.map((order) => {
-            const config = statusConfig[order.status];
-            const isExpanded = expandedOrder === order.id;
-            const avatarColor = getAvatarColor(order.customer_info.name);
-            const initial = order.customer_info.name.charAt(0).toUpperCase();
-            
-            return (
-              <Card 
-                key={order.id} 
-                className={cn(
-                  "border-0 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md",
-                  isExpanded && "ring-2 ring-primary/20"
-                )}
-              >
-                {/* Order Header */}
-                <CardHeader 
-                  className="p-5 cursor-pointer group"
-                  onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+        <>
+          <div className="grid gap-4">
+            {paginatedOrders.map((order) => {
+              const config = statusConfig[order.status];
+              const isExpanded = expandedOrder === order.id;
+              const avatarColor = getAvatarColor(order.customer_info.name);
+              const initial = order.customer_info.name.charAt(0).toUpperCase();
+              
+              return (
+                <Card 
+                  key={order.id} 
+                  className={cn(
+                    "border-0 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md",
+                    isExpanded && "ring-2 ring-primary/20"
+                  )}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Avatar */}
-                    <div className={cn(
-                      "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-105",
-                      avatarColor
-                    )}>
-                      <span className="text-xl font-bold text-white drop-shadow-sm">{initial}</span>
-                    </div>
-                    
-                    {/* Customer Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground truncate">
-                          {order.customer_info.name}
-                        </h3>
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
-                          #{order.id}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {new Date(order.created_at).toLocaleDateString('vi-VN')}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {new Date(order.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Right side: Status, Price, Expand */}
+                  {/* Order Header */}
+                  <CardHeader 
+                    className="p-5 cursor-pointer group"
+                    onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                  >
                     <div className="flex items-center gap-4">
-                      {/* Status Badge */}
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "gap-1.5 px-3 py-1.5 text-xs font-medium border transition-colors",
-                          config.className
-                        )}
-                      >
-                        <config.icon className={cn("h-3.5 w-3.5", order.status === 'processing' && "animate-spin")} />
-                        {config.label}
-                      </Badge>
-                      
-                      {/* Price */}
-                      <div className="hidden sm:flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-lg">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-bold text-foreground">
-                          {order.total.toLocaleString('vi-VN')}₫
-                        </span>
-                      </div>
-                      
-                      {/* Expand Icon */}
+                      {/* Avatar */}
                       <div className={cn(
-                        "w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center transition-all duration-300",
-                        isExpanded && "bg-primary/10 rotate-180"
+                        "w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-105",
+                        avatarColor
                       )}>
-                        <ChevronDown className={cn(
-                          "h-5 w-5 text-muted-foreground transition-colors",
-                          isExpanded && "text-primary"
-                        )} />
+                        <span className="text-xl font-bold text-white drop-shadow-sm">{initial}</span>
                       </div>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                {/* Expanded Content */}
-                <div className={cn(
-                  "overflow-hidden transition-all duration-300",
-                  isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-                )}>
-                  <CardContent className="border-t bg-muted/20 p-5 space-y-5">
-                    {/* Customer Info */}
-                    <div className="bg-card rounded-xl p-5 border shadow-sm">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                        Thông tin khách hàng
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-sm">
-                            <User className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Họ tên</p>
-                            <p className="font-medium text-foreground">{order.customer_info.name}</p>
-                          </div>
+                      
+                      {/* Customer Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {order.customer_info.name}
+                          </h3>
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
+                            #{order.id}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-sm">
-                            <User className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Mã sinh viên</p>
-                            <p className="font-medium text-foreground font-mono">{order.customer_info.phone}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-sm">
-                            <Mail className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Email</p>
-                            <p className="font-medium text-foreground truncate">{order.customer_info.email}</p>
-                          </div>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {new Date(order.created_at).toLocaleDateString('vi-VN')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            {new Date(order.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </div>
                       </div>
-                      {order.customer_info.note && (
-                        <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                          <p className="text-sm">
-                            <span className="font-semibold text-amber-700 dark:text-amber-400">📝 Ghi chú:</span>{' '}
-                            <span className="text-amber-900 dark:text-amber-300">{order.customer_info.note}</span>
-                          </p>
+                      
+                      {/* Right side: Status, Price, Expand */}
+                      <div className="flex items-center gap-4">
+                        {/* Status Badge */}
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "gap-1.5 px-3 py-1.5 text-xs font-medium border transition-colors",
+                            config.className
+                          )}
+                        >
+                          <config.icon className={cn("h-3.5 w-3.5", order.status === 'processing' && "animate-spin")} />
+                          {config.label}
+                        </Badge>
+                        
+                        {/* Price */}
+                        <div className="hidden sm:flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-lg">
+                          <CreditCard className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-bold text-foreground">
+                            {order.total.toLocaleString('vi-VN')}₫
+                          </span>
                         </div>
-                      )}
+                        
+                        {/* Expand Icon */}
+                        <div className={cn(
+                          "w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center transition-all duration-300",
+                          isExpanded && "bg-primary/10 rotate-180"
+                        )}>
+                          <ChevronDown className={cn(
+                            "h-5 w-5 text-muted-foreground transition-colors",
+                            isExpanded && "text-primary"
+                          )} />
+                        </div>
+                      </div>
                     </div>
+                  </CardHeader>
 
-                    {/* Items */}
-                    <div className="bg-card rounded-xl p-5 border shadow-sm">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                        Sản phẩm đặt mua ({order.items.length})
-                      </p>
-                      <div className="space-y-2">
-                        {order.items.map((item, idx) => (
-                          <div 
-                            key={idx} 
-                            className="flex justify-between items-center p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
-                                {idx + 1}
-                              </span>
-                              <span className="font-medium text-foreground">{item.code || item.name}</span>
+                  {/* Expanded Content */}
+                  <div className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                  )}>
+                    <CardContent className="border-t bg-muted/20 p-5 space-y-5">
+                      {/* Customer Info */}
+                      <div className="bg-card rounded-xl p-5 border shadow-sm">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                          Thông tin khách hàng
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-sm">
+                              <User className="h-5 w-5 text-white" />
                             </div>
-                            <span className="font-semibold text-foreground">{item.price.toLocaleString('vi-VN')}₫</span>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Họ tên</p>
+                              <p className="font-medium text-foreground">{order.customer_info.name}</p>
+                            </div>
                           </div>
-                        ))}
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-sm">
+                              <User className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Mã sinh viên</p>
+                              <p className="font-medium text-foreground font-mono">{order.customer_info.phone}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 transition-colors hover:bg-muted/50">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-sm">
+                              <Mail className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Email</p>
+                              <p className="font-medium text-foreground truncate">{order.customer_info.email}</p>
+                            </div>
+                          </div>
+                        </div>
+                        {order.customer_info.note && (
+                          <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                            <p className="text-sm">
+                              <span className="font-semibold text-amber-700 dark:text-amber-400">📝 Ghi chú:</span>{' '}
+                              <span className="text-amber-900 dark:text-amber-300">{order.customer_info.note}</span>
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-4 pt-4 border-t border-dashed flex justify-between items-center">
-                        <span className="font-bold text-muted-foreground">TỔNG CỘNG</span>
-                        <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                          {order.total.toLocaleString('vi-VN')}₫
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateOrderStatus(order.id, 'processing')}
-                        disabled={order.status === 'processing'}
-                        className="gap-1.5 h-10 px-4 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-all hover:scale-105"
-                      >
-                        <Loader2 className="h-4 w-4" />
-                        Đang xử lý
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateOrderStatus(order.id, 'completed')}
-                        disabled={order.status === 'completed'}
-                        className="gap-1.5 h-10 px-4 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-900/40 transition-all hover:scale-105"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        Hoàn thành
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                        disabled={order.status === 'cancelled'}
-                        className="gap-1.5 h-10 px-4 bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40 transition-all hover:scale-105"
-                      >
-                        <XCircle className="h-4 w-4" />
-                        Hủy đơn
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteOrder(order.id)}
-                        className="ml-auto gap-1.5 h-10 px-4 transition-all hover:scale-105"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Xóa đơn
-                      </Button>
-                    </div>
-                  </CardContent>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                      {/* Items */}
+                      <div className="bg-card rounded-xl p-5 border shadow-sm">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                          Sản phẩm đặt mua ({order.items.length})
+                        </p>
+                        <div className="space-y-2">
+                          {order.items.map((item, idx) => (
+                            <div 
+                              key={idx} 
+                              className="flex justify-between items-center p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                                  {idx + 1}
+                                </span>
+                                <span className="font-medium text-foreground">{item.code || item.name}</span>
+                              </div>
+                              <span className="font-semibold text-foreground">{item.price.toLocaleString('vi-VN')}₫</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-dashed flex justify-between items-center">
+                          <span className="font-bold text-muted-foreground">TỔNG CỘNG</span>
+                          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                            {order.total.toLocaleString('vi-VN')}₫
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateOrderStatus(order.id, 'pending')}
+                          disabled={order.status === 'pending'}
+                          className="gap-1.5 h-10 px-4 bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/40 transition-all hover:scale-105"
+                        >
+                          <Clock className="h-4 w-4" />
+                          Chờ xử lý
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateOrderStatus(order.id, 'processing')}
+                          disabled={order.status === 'processing'}
+                          className="gap-1.5 h-10 px-4 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-all hover:scale-105"
+                        >
+                          <Loader2 className="h-4 w-4" />
+                          Đang xử lý
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateOrderStatus(order.id, 'completed')}
+                          disabled={order.status === 'completed'}
+                          className="gap-1.5 h-10 px-4 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-900/40 transition-all hover:scale-105"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Hoàn thành
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                          disabled={order.status === 'cancelled'}
+                          className="gap-1.5 h-10 px-4 bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40 transition-all hover:scale-105"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Hủy đơn
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteOrder(order.id)}
+                          className="ml-auto gap-1.5 h-10 px-4 transition-all hover:scale-105"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Xóa đơn
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+          
+          {/* Pagination */}
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onNextPage={nextPage}
+              onPrevPage={prevPage}
+              onFirstPage={goToFirstPage}
+              onLastPage={goToLastPage}
+            />
+          </Card>
+        </>
       )}
     </div>
   );

@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import ImageUpload from "./ImageUpload";
+import { usePagination } from "@/hooks/usePagination";
+import PaginationControls from "./PaginationControls";
 
 interface Product {
   id: string;
@@ -218,6 +220,20 @@ const ProductsTab = () => {
   const filteredProducts = filterType === 'all' 
     ? products 
     : products.filter(p => p.type === filterType);
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedProducts,
+    setPage,
+    nextPage,
+    prevPage,
+    goToFirstPage,
+    goToLastPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ items: filteredProducts, itemsPerPage: 9 });
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -446,7 +462,7 @@ const ProductsTab = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredProducts.map((product) => (
+        {paginatedProducts.map((product) => (
           <Card key={product.id} className={`p-4 ${!product.active ? 'opacity-50' : ''}`}>
             <div className="flex gap-4">
               {product.image_url ? (
@@ -490,9 +506,24 @@ const ProductsTab = () => {
         ))}
       </div>
 
-      {filteredProducts.length === 0 && !showForm && (
+      {filteredProducts.length === 0 && !showForm ? (
         <Card className="p-8 text-center text-muted-foreground">
           Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
+        </Card>
+      ) : totalPages > 1 && (
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalItems={totalItems}
+            onPageChange={setPage}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onFirstPage={goToFirstPage}
+            onLastPage={goToLastPage}
+          />
         </Card>
       )}
     </div>
