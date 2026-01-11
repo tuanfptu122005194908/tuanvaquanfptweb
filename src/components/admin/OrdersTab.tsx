@@ -16,7 +16,8 @@ import {
   Search,
   Filter,
   Calendar,
-  CreditCard
+  CreditCard,
+  Edit
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +28,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "./PaginationControls";
+import EditOrderModal from "./EditOrderModal";
 
 interface OrdersTabProps {
   orders: Order[];
@@ -75,6 +77,7 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   const updateOrderStatus = async (orderId: number, newStatus: Order['status']) => {
     try {
@@ -452,6 +455,15 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
                         </Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          onClick={() => setEditingOrder(order)}
+                          className="gap-1.5 h-10 px-4 bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100 hover:text-violet-800 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-400 dark:hover:bg-violet-900/40 transition-all hover:scale-105"
+                        >
+                          <Edit className="h-4 w-4" />
+                          Sửa đơn
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="destructive"
                           onClick={() => deleteOrder(order.id)}
                           className="ml-auto gap-1.5 h-10 px-4 transition-all hover:scale-105"
@@ -484,6 +496,14 @@ const OrdersTab = ({ orders, isLoading, onRefresh }: OrdersTabProps) => {
           </Card>
         </>
       )}
+
+      {/* Edit Order Modal */}
+      <EditOrderModal
+        isOpen={!!editingOrder}
+        onClose={() => setEditingOrder(null)}
+        order={editingOrder}
+        onSave={onRefresh}
+      />
     </div>
   );
 };
