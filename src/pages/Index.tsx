@@ -62,11 +62,11 @@ const Index = () => {
         <SearchBar onAddToCart={addToCart} />
       </div>
       
+      <SpinWheel />
       <CourseSection onAddToCart={addToCart} />
       <EnglishSection onAddToCart={addToCart} />
       <DocumentSection onAddToCart={addToCart} />
       <CourseraSection onAddToCart={addToCart} />
-      <SpinWheel />
       <ContactSection />
 
       <CartModal
