@@ -13,7 +13,8 @@ import {
   X,
   Home,
   Bell,
-  Wallet
+  Wallet,
+  Gift
 } from "lucide-react";
 import { useState } from "react";
 import OverviewTab from "./OverviewTab";
@@ -23,6 +24,7 @@ import CouponsTab from "./CouponsTab";
 import ProductsTab from "./ProductsTab";
 import SettingsTab from "./SettingsTab";
 import ExpensesTab from "./ExpensesTab";
+import SpinManagementTab from "./SpinManagementTab";
 import { toast } from "sonner";
 import { useAdminData } from "@/hooks/useAdminData";
 import { cn } from "@/lib/utils";
@@ -52,6 +54,7 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
     { id: "users", label: "Người dùng", icon: Users },
     { id: "products", label: "Sản phẩm", icon: Package },
     { id: "coupons", label: "Mã giảm giá", icon: Ticket },
+    { id: "spin", label: "Vòng quay", icon: Gift },
     { id: "expenses", label: "Chi tiêu", icon: Wallet },
     { id: "settings", label: "Cài đặt", icon: Settings },
   ];
@@ -73,6 +76,8 @@ const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
         return <ProductsTab />;
       case "coupons":
         return <CouponsTab />;
+      case "spin":
+        return <SpinManagementTab />;
       case "expenses":
         return <ExpensesTab />;
       case "settings":
