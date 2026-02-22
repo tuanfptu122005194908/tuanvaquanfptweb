@@ -224,6 +224,42 @@ export type Database = {
         }
         Relationships: []
       }
+      spin_requests: {
+        Row: {
+          approved_at: string | null
+          completed_at: string | null
+          coupon_code: string | null
+          created_at: string
+          id: string
+          prize_value: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          completed_at?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          id?: string
+          prize_value?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          completed_at?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          id?: string
+          prize_value?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

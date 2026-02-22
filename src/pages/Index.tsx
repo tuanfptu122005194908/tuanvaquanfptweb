@@ -7,6 +7,7 @@ import EnglishSection from "@/components/EnglishSection";
 import DocumentSection from "@/components/DocumentSection";
 import CourseraSection from "@/components/CourseraSection";
 import ContactSection from "@/components/ContactSection";
+import SpinWheel from "@/components/SpinWheel";
 import CartModal from "@/components/CartModal";
 import LoginModal from "@/components/LoginModal";
 import RegisterModal from "@/components/RegisterModal";
@@ -65,6 +66,7 @@ const Index = () => {
       <EnglishSection onAddToCart={addToCart} />
       <DocumentSection onAddToCart={addToCart} />
       <CourseraSection onAddToCart={addToCart} />
+      <SpinWheel />
       <ContactSection />
 
       <CartModal
