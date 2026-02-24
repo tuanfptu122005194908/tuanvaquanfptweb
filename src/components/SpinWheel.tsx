@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Gift, Sparkles, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Gift, Sparkles, Clock, CheckCircle2, Loader2, Copy } from "lucide-react";
 
 const PRIZES = [
   { value: 10000, label: "10K", color: "#FF6B6B", lightColor: "#FFE0E0" },
@@ -14,10 +14,15 @@ const PRIZES = [
   { value: 30000, label: "30K", color: "#FFE66D", lightColor: "#FFF8D4" },
   { value: 40000, label: "40K", color: "#A78BFA", lightColor: "#EDE9FE" },
   { value: 50000, label: "50K", color: "#F472B6", lightColor: "#FCE7F3" },
-  { value: 10000, label: "10K", color: "#FB923C", lightColor: "#FED7AA" },
-  { value: 20000, label: "20K", color: "#34D399", lightColor: "#D1FAE5" },
-  { value: 30000, label: "30K", color: "#60A5FA", lightColor: "#DBEAFE" },
+  { value: 60000, label: "60K", color: "#FB923C", lightColor: "#FED7AA" },
+  { value: 70000, label: "70K", color: "#34D399", lightColor: "#D1FAE5" },
+  { value: 80000, label: "80K", color: "#60A5FA", lightColor: "#DBEAFE" },
+  { value: 90000, label: "90K", color: "#F59E0B", lightColor: "#FEF3C7" },
+  { value: 100000, label: "100K", color: "#EC4899", lightColor: "#FCE7F3" },
 ];
+
+// Indices that users can actually win (10K = index 0, 20K = index 1)
+const WINNABLE_INDICES = [0, 1];
 
 const SpinWheel = () => {
   const { user } = useAuth();
@@ -46,12 +51,10 @@ const SpinWheel = () => {
 
     ctx.clearRect(0, 0, size, size);
 
-    // Draw segments
     PRIZES.forEach((prize, i) => {
       const startAngle = (i * segmentAngle - 90) * (Math.PI / 180);
       const endAngle = ((i + 1) * segmentAngle - 90) * (Math.PI / 180);
 
-      // Segment fill
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, startAngle, endAngle);
@@ -59,7 +62,6 @@ const SpinWheel = () => {
       ctx.fillStyle = prize.color;
       ctx.fill();
 
-      // Inner lighter stripe
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius * 0.85, startAngle, endAngle);
@@ -67,7 +69,6 @@ const SpinWheel = () => {
       ctx.fillStyle = prize.lightColor + "40";
       ctx.fill();
 
-      // Segment border
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, startAngle, endAngle);
@@ -76,7 +77,6 @@ const SpinWheel = () => {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Text
       const textAngle = startAngle + (endAngle - startAngle) / 2;
       const textRadius = radius * 0.65;
       const textX = center + Math.cos(textAngle) * textRadius;
@@ -86,21 +86,21 @@ const SpinWheel = () => {
       ctx.translate(textX, textY);
       ctx.rotate(textAngle + Math.PI / 2);
       ctx.fillStyle = "#FFFFFF";
-      ctx.font = `bold ${size * 0.055}px 'Inter', sans-serif`;
+      ctx.font = `bold ${size * 0.045}px 'Inter', sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.shadowColor = "rgba(0,0,0,0.3)";
       ctx.shadowBlur = 4;
-      ctx.fillText(prize.label, 0, -6);
-      ctx.font = `${size * 0.03}px 'Inter', sans-serif`;
-      ctx.fillText("VNĐ", 0, 12);
+      ctx.fillText(prize.label, 0, -4);
+      ctx.font = `${size * 0.025}px 'Inter', sans-serif`;
+      ctx.fillText("VNĐ", 0, 10);
       ctx.restore();
     });
 
     // Center circle
     ctx.beginPath();
-    ctx.arc(center, center, radius * 0.18, 0, Math.PI * 2);
-    const gradient = ctx.createRadialGradient(center, center, 0, center, center, radius * 0.18);
+    ctx.arc(center, center, radius * 0.15, 0, Math.PI * 2);
+    const gradient = ctx.createRadialGradient(center, center, 0, center, center, radius * 0.15);
     gradient.addColorStop(0, "#FFD700");
     gradient.addColorStop(1, "#FFA500");
     ctx.fillStyle = gradient;
@@ -109,9 +109,8 @@ const SpinWheel = () => {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Center text
     ctx.fillStyle = "#FFF";
-    ctx.font = `bold ${size * 0.04}px 'Inter', sans-serif`;
+    ctx.font = `bold ${size * 0.035}px 'Inter', sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(0,0,0,0.3)";
@@ -193,66 +192,51 @@ const SpinWheel = () => {
     }
   };
 
-  const generateCouponCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "SPIN";
-    for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
-    return code;
-  };
-
   const doSpin = async () => {
     if (!approvedRequest || isSpinning) return;
 
     setIsSpinning(true);
-    // Random prize
-    const prizeIndex = Math.floor(Math.random() * PRIZES.length);
+
+    // Only land on 10K (index 0) or 20K (index 1)
+    const prizeIndex = WINNABLE_INDICES[Math.floor(Math.random() * WINNABLE_INDICES.length)];
     const prize = PRIZES[prizeIndex];
-    // Calculate rotation: multiple full spins + land on prize segment
+
+    // Calculate rotation to land on this segment
     const targetAngle = 360 - prizeIndex * segmentAngle - segmentAngle / 2;
     const totalRotation = rotation + 360 * 8 + targetAngle;
     setRotation(totalRotation);
 
-    // Wait for spin animation
+    // Wait for animation
     setTimeout(async () => {
-      const couponCode = generateCouponCode();
-      setWonPrize(prize.value);
-      setWonCoupon(couponCode);
-
       try {
-        // Create the coupon
-        await supabase.from("coupons").insert({
-          code: couponCode,
-          discount_type: "fixed",
-          discount_value: prize.value,
-          min_order_value: 0,
-          max_uses: 1,
-          active: true,
+        const { data, error } = await supabase.functions.invoke('complete-spin', {
+          body: { spinRequestId: approvedRequest.id, prizeValue: prize.value }
         });
 
-        // Mark spin as completed
-        await supabase
-          .from("spin_requests")
-          .update({
-            status: "completed",
-            prize_value: prize.value,
-            coupon_code: couponCode,
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", approvedRequest.id);
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
 
+        setWonPrize(data.prizeValue);
+        setWonCoupon(data.couponCode);
         setApprovedRequest(null);
         setShowResult(true);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        toast.error("Có lỗi xảy ra!");
+        toast.error(err.message || "Có lỗi xảy ra!");
       }
       setIsSpinning(false);
     }, 5500);
   };
 
+  const copyCoupon = () => {
+    if (wonCoupon) {
+      navigator.clipboard.writeText(wonCoupon);
+      toast.success("Đã sao chép mã giảm giá!");
+    }
+  };
+
   return (
     <section className="py-12 relative overflow-hidden">
-      {/* Background decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -268,17 +252,15 @@ const SpinWheel = () => {
             🎰 Vòng Quay May Mắn
           </h2>
           <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-            Quay ngay để nhận mã giảm giá lên đến <strong className="text-foreground">50.000₫</strong>!
+            Quay ngay để nhận mã giảm giá lên đến <strong className="text-foreground">100.000₫</strong>!
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-8 max-w-lg mx-auto">
           {/* Wheel */}
           <div className="relative">
-            {/* Outer glow */}
             <div className="absolute -inset-4 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-full opacity-20 blur-xl animate-pulse" />
             
-            {/* Decorative dots around wheel */}
             <div className="absolute -inset-3 rounded-full">
               {Array.from({ length: 24 }).map((_, i) => (
                 <div
@@ -295,12 +277,10 @@ const SpinWheel = () => {
               ))}
             </div>
 
-            {/* Pointer/Arrow */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
               <div className="w-0 h-0 border-l-[14px] border-r-[14px] border-t-[28px] border-l-transparent border-r-transparent border-t-amber-500 drop-shadow-lg" />
             </div>
 
-            {/* Wheel canvas */}
             <div
               className="relative z-10"
               style={{
@@ -410,9 +390,14 @@ const SpinWheel = () => {
             </div>
             <div className="p-4 bg-muted/80 rounded-xl">
               <p className="text-sm text-muted-foreground mb-1">Mã giảm giá của bạn</p>
-              <p className="text-2xl font-mono font-bold text-foreground tracking-wider">
-                {wonCoupon}
-              </p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-2xl font-mono font-bold text-foreground tracking-wider">
+                  {wonCoupon}
+                </p>
+                <Button variant="ghost" size="icon" onClick={copyCoupon} className="h-8 w-8">
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <p className="text-sm text-muted-foreground">
               Sử dụng mã này khi đặt hàng để được giảm giá!
