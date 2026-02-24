@@ -26,10 +26,10 @@ const WINNABLE_INDICES = [0, 1];
 
 // Fake winners data
 const FAKE_NAMES = [
-  "Nguyễn Văn A", "Trần Thị B", "Lê Minh C", "Phạm Hoàng D", "Võ Thanh E",
-  "Đặng Thu F", "Bùi Quốc G", "Hoàng Thị H", "Ngô Đức I", "Đỗ Thị K",
-  "Huỳnh Anh L", "Phan Văn M", "Vũ Thị N", "Lý Minh O", "Dương Thị P",
-  "Trịnh Quang Q", "Mai Thị R", "Đinh Văn S", "Lương Thế T", "Tạ Thị U",
+  "Nguyễn Minh Tuấn", "Trần Thị Hương", "Lê Quốc Bảo", "Phạm Thị Mai", "Võ Thanh Hải",
+  "Đặng Thu Trang", "Bùi Quốc Việt", "Hoàng Thị Lan", "Ngô Đức Thắng", "Đỗ Thị Ngọc",
+  "Huỳnh Anh Khoa", "Phan Văn Đạt", "Vũ Thị Hà", "Lý Minh Phúc", "Dương Thị Yến",
+  "Trịnh Quang Huy", "Mai Thị Linh", "Đinh Văn Phong", "Lương Thế Vinh", "Tạ Thị Thanh",
 ];
 const FAKE_PRIZES = [100000, 80000, 50000, 70000, 60000, 100000, 50000, 80000, 60000, 70000];
 

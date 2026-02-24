@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Gift, Clock, CheckCircle2, XCircle, Trash2, Search, RotateCcw } from "lucide-react";
+import { Check, X, Gift, Clock, CheckCircle2, XCircle, Trash2, Search, RotateCcw, Trophy, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { usePagination } from "@/hooks/usePagination";
 import PaginationControls from "./PaginationControls";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 interface SpinRequest {
   id: string;
@@ -21,10 +22,53 @@ interface SpinRequest {
   profile?: { name: string; email: string | null };
 }
 
+const FAKE_WINNER_NAMES = [
+  "Nguyễn Minh Tuấn", "Trần Thị Hương", "Lê Quốc Bảo", "Phạm Thị Mai", "Võ Thanh Hải",
+  "Đặng Thu Trang", "Bùi Quốc Việt", "Hoàng Thị Lan", "Ngô Đức Thắng", "Đỗ Thị Ngọc",
+  "Huỳnh Anh Khoa", "Phan Văn Đạt", "Vũ Thị Hà", "Lý Minh Phúc", "Dương Thị Yến",
+  "Trịnh Quang Huy", "Mai Thị Linh", "Đinh Văn Phong", "Lương Thế Vinh", "Tạ Thị Thanh",
+  "Cao Bá Quát", "Hồ Thị Thảo", "Châu Minh Đức", "Lâm Thị Kim", "Tô Văn Hoàng",
+];
+const FAKE_WINNER_PRIZES = [100000, 80000, 50000, 70000, 60000];
+const FAKE_EMAILS = [
+  "tuan.nm@gmail.com", "huong.tt@gmail.com", "bao.lq@gmail.com", "mai.pt@gmail.com", "hai.vt@gmail.com",
+  "trang.dt@gmail.com", "viet.bq@gmail.com", "lan.ht@gmail.com", "thang.nd@gmail.com", "ngoc.dt@gmail.com",
+  "khoa.ha@gmail.com", "dat.pv@gmail.com", "ha.vt@gmail.com", "phuc.lm@gmail.com", "yen.dt@gmail.com",
+  "huy.tq@gmail.com", "linh.mt@gmail.com", "phong.dv@gmail.com", "vinh.lt@gmail.com", "thanh.tt@gmail.com",
+  "quat.cb@gmail.com", "thao.ht@gmail.com", "duc.cm@gmail.com", "kim.lt@gmail.com", "hoang.tv@gmail.com",
+];
+
+function shuffleSeed<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 9301 + 49297) % 233280;
+    const j = Math.floor((s / 233280) * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 const SpinManagementTab = () => {
   const [requests, setRequests] = useState<SpinRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFakeList, setShowFakeList] = useState(true);
+
+  // Generate fake winners list - shuffled but stable per session
+  const fakeWinners = useMemo(() => {
+    const seed = Math.floor(Date.now() / 3600000); // changes every hour
+    const names = shuffleSeed(FAKE_WINNER_NAMES, seed);
+    const prizes = shuffleSeed(FAKE_WINNER_PRIZES, seed + 1);
+    const emails = shuffleSeed(FAKE_EMAILS, seed + 2);
+    return names.map((name, i) => ({
+      name,
+      email: emails[i % emails.length],
+      prize: prizes[i % prizes.length],
+      code: `SPIN${String.fromCharCode(65 + (i % 26))}${Math.floor(1000 + ((seed * (i + 1)) % 9000))}${String.fromCharCode(65 + ((i * 3) % 26))}X`,
+      time: `${1 + (i * 7 + seed) % 48}h trước`,
+    }));
+  }, []);
 
   useEffect(() => {
     fetchRequests();
@@ -186,6 +230,63 @@ const SpinManagementTab = () => {
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Fake Winners Display List */}
+      <Card className="border bg-card">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              <h3 className="font-semibold text-foreground">Danh sách trúng thưởng (hiển thị cho khách)</h3>
+              <Badge variant="outline" className="text-xs">Fake</Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFakeList(!showFakeList)}
+              className="gap-1"
+            >
+              {showFakeList ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              {showFakeList ? "Ẩn" : "Hiện"}
+            </Button>
+          </div>
+          {showFakeList && (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8">#</TableHead>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Giải thưởng</TableHead>
+                    <TableHead>Mã coupon</TableHead>
+                    <TableHead>Thời gian</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fakeWinners.map((w, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="font-medium">{w.name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{w.email}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 font-mono">
+                          {w.prize.toLocaleString("vi-VN")}₫
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">{w.code}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{w.time}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-2">
+            ⚠️ Danh sách này là fake, tự động shuffle mỗi giờ. Hiển thị trên trang chủ cho khách hàng thấy.
+          </p>
         </CardContent>
       </Card>
 
