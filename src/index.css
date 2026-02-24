@@ -342,3 +342,17 @@
   background: hsl(var(--primary) / 0.3);
   color: hsl(var(--foreground));
 }
+
+/* Marquee scroll up animation */
+@keyframes marquee-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.animate-marquee-up {
+  animation: marquee-up 25s linear infinite;
+}
+
+.animate-marquee-up:hover {
+  animation-play-state: paused;
+}
