@@ -24,9 +24,38 @@ const PRIZES = [
 // Indices that users can actually win (10K = index 0, 20K = index 1)
 const WINNABLE_INDICES = [0, 1];
 
+// Fake winners data
+const FAKE_NAMES = [
+  "Nguyễn Văn A", "Trần Thị B", "Lê Minh C", "Phạm Hoàng D", "Võ Thanh E",
+  "Đặng Thu F", "Bùi Quốc G", "Hoàng Thị H", "Ngô Đức I", "Đỗ Thị K",
+  "Huỳnh Anh L", "Phan Văn M", "Vũ Thị N", "Lý Minh O", "Dương Thị P",
+  "Trịnh Quang Q", "Mai Thị R", "Đinh Văn S", "Lương Thế T", "Tạ Thị U",
+];
+const FAKE_PRIZES = [100000, 80000, 50000, 70000, 60000, 100000, 50000, 80000, 60000, 70000];
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateFakeWinners() {
+  const names = shuffleArray(FAKE_NAMES);
+  const prizes = shuffleArray(FAKE_PRIZES);
+  return names.map((name, i) => ({
+    name,
+    prize: prizes[i % prizes.length],
+    time: `${Math.floor(Math.random() * 23) + 1}h trước`,
+  }));
+}
+
 const SpinWheel = () => {
   const { user } = useAuth();
   const [isSpinning, setIsSpinning] = useState(false);
+  const [fakeWinners] = useState(() => generateFakeWinners());
   const [rotation, setRotation] = useState(0);
   const [pendingRequest, setPendingRequest] = useState<any>(null);
   const [approvedRequest, setApprovedRequest] = useState<any>(null);
@@ -296,6 +325,37 @@ const SpinWheel = () => {
                 height={320}
                 className="w-72 h-72 md:w-80 md:h-80 drop-shadow-2xl"
               />
+            </div>
+          </div>
+
+          {/* Fake winners marquee */}
+          <div className="w-full overflow-hidden rounded-xl border bg-card/80 backdrop-blur-sm">
+            <div className="px-3 py-2 border-b bg-gradient-to-r from-amber-500/10 to-pink-500/10 flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">🏆 Người chơi may mắn</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+            </div>
+            <div className="relative h-[140px] overflow-hidden">
+              <div className="animate-marquee-up space-y-0">
+                {[...fakeWinners, ...fakeWinners].map((w, i) => (
+                  <div key={i} className="flex items-center justify-between px-3 py-2 text-sm border-b border-border/30 last:border-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {w.name.charAt(w.name.lastIndexOf(" ") + 1)}
+                      </div>
+                      <span className="text-foreground truncate">{w.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className="text-xs font-mono bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                        +{w.prize.toLocaleString("vi-VN")}₫
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{w.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
