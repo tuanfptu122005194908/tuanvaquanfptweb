@@ -200,6 +200,42 @@ export type Database = {
         }
         Relationships: []
       }
+      school_terms: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          start_date: string
+          total_orders: number | null
+          total_revenue: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          start_date: string
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          start_date?: string
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
@@ -283,6 +319,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_new_term: {
+        Args: { term_name: string; term_start_date: string }
+        Returns: string
+      }
+      get_current_term: {
+        Args: never
+        Returns: {
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          start_date: string
+          total_orders: number
+          total_revenue: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
