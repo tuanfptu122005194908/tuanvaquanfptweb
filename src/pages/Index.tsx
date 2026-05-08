@@ -48,6 +48,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ShutdownNotice />
       <Header 
         cartCount={cart.length}
         onCartClick={() => setShowCart(true)}
