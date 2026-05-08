@@ -8,6 +8,7 @@ import DocumentSection from "@/components/DocumentSection";
 import CourseraSection from "@/components/CourseraSection";
 import ContactSection from "@/components/ContactSection";
 import SpinWheel from "@/components/SpinWheel";
+import ShutdownNotice from "@/components/ShutdownNotice";
 import CartModal from "@/components/CartModal";
 import LoginModal from "@/components/LoginModal";
 import RegisterModal from "@/components/RegisterModal";
@@ -47,6 +48,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ShutdownNotice />
       <Header 
         cartCount={cart.length}
         onCartClick={() => setShowCart(true)}
